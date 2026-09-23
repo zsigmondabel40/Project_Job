@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Budapest Gyakornokkereső</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --paper:#f4f6f4; --surface:#ffffff; --surface-2:#eef1ee;
+  --ink:#152220; --ink-2:#405049; --muted:#6d7d77;
+  --line:#dde3df; --line-strong:#c4cec9;
+  --accent:#0d6b58; --accent-ink:#ffffff; --accent-soft:#e2f0eb; --accent-line:#a9d3c7;
+  --warn:#8a5a00; --warn-soft:#fbf0dc;
+  --live:#1c7d45; --stale:#8a5a00;
+  --shadow:0 1px 2px rgba(21,34,32,.06), 0 8px 24px -12px rgba(21,34,32,.18);
+  --radius:10px;
+  --ui:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display:"Newsreader", Georgia, "Times New Roman", serif;
+  --mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0e1412; --surface:#161d1b; --surface-2:#1d2624;
+    --ink:#e7efeb; --ink-2:#b6c4bf; --muted:#879992;
+    --line:#28332f; --line-strong:#3a4844;
+    --accent:#4cbfa2; --accent-ink:#06211b; --accent-soft:#16302a; --accent-line:#2b5b4f;
+    --warn:#e0b060; --warn-soft:#2e2413;
+    --live:#5cc47f; --stale:#e0b060;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0e1412; --surface:#161d1b; --surface-2:#1d2624;
+  --ink:#e7efeb; --ink-2:#b6c4bf; --muted:#879992;
+  --line:#28332f; --line-strong:#3a4844;
+  --accent:#4cbfa2; --accent-ink:#06211b; --accent-soft:#16302a; --accent-line:#2b5b4f;
+  --warn:#e0b060; --warn-soft:#2e2413;
+  --live:#5cc47f; --stale:#e0b060;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:var(--ui); font-size:15px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+img{max-width:100%}
+[hidden]{display:none!important}
+button,input,select{font:inherit;color:inherit}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:4px}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky; top:env(safe-area-inset-top,0px); z-index:40;
+  background:var(--surface); border-bottom:1px solid var(--line);
+}
+.topbar-inner{
+  max-width:1280px; margin:0 auto; padding:12px 16px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.brand{display:flex; align-items:baseline; gap:4px 10px; flex:1 1 auto; min-width:0; flex-wrap:wrap}
+.brand h1{
+  font-family:var(--display); font-weight:600; font-size:22px;
+  margin:0; letter-spacing:-.01em;
+}
+.brand .src{
+  font-family:var(--mono); font-size:11px; color:var(--muted);
+  letter-spacing:.04em; text-transform:uppercase;
+}
+.searchgroup{display:flex; flex:1 1 380px; min-width:260px; gap:0; border:1px solid var(--line-strong); border-radius:999px; background:var(--surface); overflow:hidden}
+.searchgroup input{
+  border:0; background:transparent; padding:9px 14px; min-width:0; flex:1 1 auto; font-size:14px;
+}
+.searchgroup input::placeholder{color:var(--muted)}
+.searchgroup .divider{width:1px; background:var(--line); flex:0 0 1px; margin:6px 0}
+.status{
+  display:flex; align-items:center; gap:10px 12px; flex:1 1 auto; min-width:0; flex-wrap:wrap;
+  font-family:var(--mono); font-size:11px; color:var(--muted);
+}
+.srcstat{display:inline-flex; align-items:center; gap:6px; min-width:0}
+.srcstat span:last-child{overflow-wrap:anywhere}
+.srcbadge{
+  font-family:var(--mono); font-size:10px; letter-spacing:.03em;
+  border:1px solid var(--line); border-radius:4px; padding:1px 5px; color:var(--muted);
+  background:var(--surface-2); white-space:nowrap;
+}
+.srcbadge.zy{border-color:var(--accent-line); background:var(--accent-soft); color:var(--ink)}
+.dot{width:7px; height:7px; border-radius:50%; background:var(--muted); flex:0 0 auto}
+.dot.live{background:var(--live)}
+.dot.snap{background:var(--stale)}
+.dot.loading{background:var(--muted); animation:pulse 1.1s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+.refresh{
+  border:1px solid var(--line-strong); background:var(--surface); color:var(--ink-2);
+  border-radius:999px; padding:5px 11px; font-size:12px; cursor:pointer;
+}
+.refresh:hover{background:var(--surface-2)}
+
+/* ---------- filter bar ---------- */
+.filterbar{
+  position:sticky; top:calc(env(safe-area-inset-top,0px) + 57px); z-index:30;
+  background:var(--paper); border-bottom:1px solid var(--line);
+}
+.filterbar-inner{max-width:1280px; margin:0 auto; padding:10px 16px}
+.pillrow{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+.pill{
+  position:relative; display:inline-flex; align-items:center; gap:6px;
+  border:1px solid var(--line-strong); background:var(--surface); color:var(--ink);
+  border-radius:999px; padding:6px 13px; font-size:13px; font-weight:500; cursor:pointer;
+  white-space:nowrap;
+}
+.pill:hover{background:var(--surface-2)}
+.pill[aria-expanded="true"]{border-color:var(--accent); box-shadow:0 0 0 1px var(--accent)}
+.pill.on{background:var(--accent); border-color:var(--accent); color:var(--accent-ink)}
+.pill .caret{font-size:9px; opacity:.75}
+.pill .n{
+  font-family:var(--mono); font-size:11px; background:rgba(255,255,255,.28);
+  border-radius:999px; padding:0 5px;
+}
+.pill.toggle{padding:6px 13px}
+.panel{
+  position:absolute; top:calc(100% + 6px); left:0; z-index:50;
+  background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--radius);
+  box-shadow:var(--shadow); width:288px; max-width:calc(100vw - 32px);
+  display:flex; flex-direction:column; max-height:min(420px, 60vh);
+}
+.panel-body{overflow-y:auto; padding:8px 6px; display:flex; flex-direction:column; gap:1px}
+.opt{
+  display:flex; align-items:center; gap:9px; padding:7px 10px; border-radius:6px;
+  cursor:pointer; font-size:13.5px; line-height:1.3;
+}
+.opt:hover{background:var(--surface-2)}
+.opt input{margin:0; accent-color:var(--accent); flex:0 0 auto}
+.opt .label{flex:1 1 auto; min-width:0}
+.opt .cnt{font-family:var(--mono); font-size:11px; color:var(--muted); flex:0 0 auto}
+.opt.disabled{opacity:.45}
+.panel-foot{
+  display:flex; justify-content:space-between; gap:8px; padding:8px 10px;
+  border-top:1px solid var(--line);
+}
+.linkbtn{
+  border:0; background:transparent; color:var(--accent); font-size:13px; font-weight:600;
+  cursor:pointer; padding:4px 6px; border-radius:6px;
+}
+.linkbtn:hover{background:var(--accent-soft)}
+.btn-primary{
+  border:0; background:var(--accent); color:var(--accent-ink); font-size:13px; font-weight:600;
+  border-radius:999px; padding:6px 16px; cursor:pointer;
+}
+.radiorow{display:flex; flex-direction:column; gap:1px}
+
+/* active chips */
+.activerow{
+  display:flex; gap:7px; flex-wrap:wrap; align-items:center;
+  max-width:1280px; margin:0 auto; padding:0 16px 10px;
+}
+.chip{
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--accent-soft); border:1px solid var(--accent-line); color:var(--ink);
+  border-radius:999px; padding:3px 6px 3px 11px; font-size:12.5px;
+}
+.chip button{
+  border:0; background:transparent; cursor:pointer; color:var(--ink-2);
+  font-size:14px; line-height:1; padding:2px 4px; border-radius:50%;
+}
+.chip button:hover{background:rgba(0,0,0,.08); color:var(--ink)}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1280px; margin:0 auto; padding:16px; padding-block:16px}
+.resultbar{
+  display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+  flex-wrap:wrap; margin-bottom:12px;
+}
+.count{font-family:var(--mono); font-size:12.5px; color:var(--ink-2)}
+.count b{font-weight:500; color:var(--ink)}
+.sortwrap{display:flex; align-items:center; gap:7px; font-size:13px; color:var(--muted)}
+.sortwrap select{
+  border:1px solid var(--line-strong); background:var(--surface); border-radius:999px;
+  padding:5px 10px; font-size:13px; cursor:pointer;
+}
+.split{display:grid; grid-template-columns:minmax(0,4fr) minmax(0,5fr); gap:16px; align-items:start}
+
+/* ---------- cards ---------- */
+.list{display:flex; flex-direction:column; gap:8px; min-width:0}
+.card{
+  display:grid; grid-template-columns:40px minmax(0,1fr) auto; gap:12px;
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+  padding:13px 14px; cursor:pointer; text-align:left; width:100%; font:inherit; color:inherit;
+}
+.card:hover{border-color:var(--line-strong); background:var(--surface)}
+.card.sel{border-color:var(--accent); box-shadow:inset 3px 0 0 var(--accent)}
+.avatar{
+  position:relative; width:40px; height:40px; border-radius:8px; overflow:hidden;
+  background:var(--surface-2); border:1px solid var(--line); flex:0 0 auto;
+}
+.avatar .ini{
+  position:absolute; inset:0; display:grid; place-items:center;
+  font-family:var(--mono); font-size:13px; color:var(--muted);
+}
+.avatar img{position:absolute; inset:0; width:100%; height:100%; object-fit:contain; background:var(--surface)}
+.card-main{min-width:0; display:flex; flex-direction:column; gap:3px}
+.card h3{
+  font-family:var(--display); font-weight:600; font-size:16.5px; margin:0;
+  line-height:1.25; text-wrap:balance;
+}
+.card .co{font-size:13.5px; color:var(--ink-2)}
+.card .loc{font-size:12.5px; color:var(--muted)}
+.tags{display:flex; gap:5px; flex-wrap:wrap; margin-top:5px}
+.tag{
+  font-size:11.5px; border:1px solid var(--line); background:var(--surface-2);
+  color:var(--ink-2); border-radius:5px; padding:1px 7px; white-space:nowrap;
+}
+.tag.money{font-family:var(--mono); background:var(--accent-soft); border-color:var(--accent-line); color:var(--ink)}
+.tag.remote{background:var(--accent-soft); border-color:var(--accent-line)}
+.tag.field{background:transparent}
+.card-side{display:flex; flex-direction:column; align-items:flex-end; gap:8px; flex:0 0 auto}
+.ago{font-family:var(--mono); font-size:11px; color:var(--muted); white-space:nowrap}
+.save{
+  border:1px solid var(--line-strong); background:var(--surface); border-radius:50%;
+  width:28px; height:28px; display:grid; place-items:center; cursor:pointer; font-size:13px;
+  color:var(--muted); padding:0;
+}
+.save:hover{border-color:var(--accent); color:var(--accent)}
+.save.on{background:var(--accent); border-color:var(--accent); color:var(--accent-ink)}
+
+/* ---------- detail ---------- */
+.detail{
+  position:sticky; top:calc(env(safe-area-inset-top,0px) + 118px);
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+  padding:20px; max-height:calc(100vh - 150px); overflow-y:auto;
+}
+.detail .close{display:none}
+.d-head{display:grid; grid-template-columns:48px minmax(0,1fr); gap:13px; align-items:start}
+.d-head .avatar{width:48px; height:48px}
+.detail h2{
+  font-family:var(--display); font-weight:600; font-size:23px; margin:0 0 2px;
+  line-height:1.2; text-wrap:balance;
+}
+.d-co{font-size:14.5px; color:var(--ink-2)}
+.d-loc{font-size:13px; color:var(--muted)}
+.d-actions{display:flex; gap:9px; margin:16px 0 18px; flex-wrap:wrap}
+.apply{
+  background:var(--accent); color:var(--accent-ink); border:0; border-radius:999px;
+  padding:9px 20px; font-size:14px; font-weight:600; text-decoration:none; display:inline-block;
+}
+.apply:hover{filter:brightness(1.08)}
+.ghost{
+  border:1px solid var(--line-strong); background:var(--surface); color:var(--ink);
+  border-radius:999px; padding:9px 16px; font-size:14px; font-weight:500; cursor:pointer;
+}
+.ghost:hover{background:var(--surface-2)}
+.facts{
+  display:grid; grid-template-columns:auto minmax(0,1fr); gap:7px 16px;
+  border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+  padding:14px 0; margin-bottom:16px; font-size:13.5px;
+}
+.facts dt{color:var(--muted); font-size:12.5px}
+.facts dd{margin:0; color:var(--ink)}
+.facts dd.mono{font-family:var(--mono); font-size:13px}
+.sec{margin-bottom:16px}
+.sec h4{
+  font-size:11.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--muted);
+  margin:0 0 7px; font-weight:600;
+}
+.sec p{margin:0; font-size:14px; color:var(--ink-2); line-height:1.6}
+.placeholder{
+  display:grid; place-items:center; text-align:center; padding:60px 24px; color:var(--muted);
+  background:var(--surface); border:1px dashed var(--line-strong); border-radius:var(--radius);
+}
+.placeholder p{max-width:34ch; margin:6px 0 0; font-size:14px}
+.placeholder .big{font-family:var(--display); font-size:19px; color:var(--ink-2)}
+
+/* states */
+.skel{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:13px 14px; display:grid; grid-template-columns:40px 1fr; gap:12px}
+.skel .bar{height:11px; border-radius:4px; background:var(--surface-2); animation:pulse 1.2s ease-in-out infinite}
+.skel .sq{width:40px; height:40px; border-radius:8px; background:var(--surface-2); animation:pulse 1.2s ease-in-out infinite}
+.notice{
+  background:var(--warn-soft); border:1px solid var(--warn); color:var(--ink);
+  border-radius:var(--radius); padding:14px 16px; font-size:13.5px; line-height:1.55;
+}
+.notice b{display:block; margin-bottom:4px; font-size:14px}
+.notice code{font-family:var(--mono); font-size:12.5px; background:rgba(0,0,0,.06); padding:1px 5px; border-radius:4px}
+.empty{padding:48px 20px; text-align:center; color:var(--muted)}
+
+@media (max-width:900px){
+  .split{grid-template-columns:1fr}
+  .detail{
+    position:fixed; inset:0; z-index:60; border-radius:0; border:0;
+    max-height:none; height:100%; overflow-y:auto;
+    padding:20px 16px calc(28px + env(safe-area-inset-bottom,0px));
+    padding-top:calc(20px + env(safe-area-inset-top,0px));
+  }
+  .detail .close{
+    display:inline-flex; align-items:center; gap:6px; margin-bottom:14px;
+    border:1px solid var(--line-strong); background:var(--surface); border-radius:999px;
+    padding:6px 14px; font-size:13px; cursor:pointer;
+  }
+  .filterbar{position:static}
+  .topbar{position:static}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms!important; transition-duration:.001ms!important}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <h1>Budapest Gyakornokkereső</h1>
+      <span class="src">zyntern.com + profession.hu</span>
+    </div>
+    <div class="searchgroup">
+      <input id="q" type="search" placeholder="Pozíció, cég vagy készség" aria-label="Keresés pozícióra, cégre, készségre" autocomplete="off">
+      <span class="divider"></span>
+      <input id="qloc" type="search" placeholder="Helyszín" aria-label="Keresés helyszínre" autocomplete="off">
+    </div>
+    <div class="status">
+      <span class="srcstat"><span class="dot loading" id="dotZ"></span><span id="statZ">zyntern.com…</span></span>
+      <span class="srcstat"><span class="dot snap" id="dotP"></span><span id="statP">profession.hu</span></span>
+      <button class="refresh" id="refresh" type="button">Frissítés</button>
+    </div>
+  </div>
+</header>
+
+<div class="filterbar">
+  <div class="filterbar-inner">
+    <div class="pillrow" id="pillrow"></div>
+  </div>
+  <div class="activerow" id="activerow"></div>
+</div>
+
+<div class="wrap">
+  <div id="notice" hidden></div>
+
+  <div class="resultbar">
+    <div class="count" id="count"></div>
+    <div class="sortwrap">
+      <label for="sort">Rendezés</label>
+      <select id="sort">
+        <option value="relevant">Kiemelt és friss</option>
+        <option value="new">Legfrissebb</option>
+        <option value="old">Legrégebbi</option>
+        <option value="pay">Legmagasabb órabér</option>
+        <option value="company">Cég (A–Z)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="split">
+    <div class="list" id="list"></div>
+    <div id="detailHost"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ------------------------------------------------------------------
+   1. KÉT ADATFORRÁS
+
+   a) zyntern.com — ÉLŐ. Van nyilvános JSON API-ja, nincs API kulcs és
+      nincs bejelentkezés, ráadásul "access-control-allow-origin: *"
+      fejlécet küld, ezért ez az oldal közvetlenül le tudja kérni a
+      böngészőből, minden megnyitáskor frissen.
+
+   b) profession.hu — PILLANATKÉP. Nincs API-ja, és nem enged
+      böngészőből érkező kérést (nincs CORS fejléce), ezért az adatait
+      előre begyűjtöttük és bele van építve ebbe a fájlba. Frissítéshez
+      a gyűjtést újra le kell futtatni — a "Frissítés" gomb ezt a
+      forrást nem tudja újratölteni.
+------------------------------------------------------------------ */
+var API = "https://zyntern.com/api/jobs";
+var PER_PAGE = 100;
+var MAX_PAGES = 12;
+
+var PROF_SNAPSHOT_DATE = "2026. szeptember 16.";
+var PROF_SNAPSHOT_SHORT = "09.16.";
+/* Budapest + gyakornoki / diákmunka / nincs tapasztalat szűrőkkel,
+   a négy célterületre szűkítve (pénzügy, értékesítés, marketing, menedzsment).
+   Oszlopok: id, cím, cég, város, helyszín, szakterület, alterület, típus,
+   távmunka, bér, bér szövegesen, periódus, bruttó/nettó, feladva, link, munkarend */
+var PROF_ROWS = /*__PROF_DATA__*/[];
+
+var JOBS = [];
+var SAVED = loadSaved();
+
+var state = {
+  q: "", qloc: "",
+  fields: new Set(), types: new Set(), cities: new Set(), langs: new Set(), sources: new Set(),
+  minPay: 0, maxHours: 0,
+  remote: false, noStudent: false, savedOnly: false,
+  sort: "relevant",
+  selected: null
+};
+
+/* ---------- API betöltés ---------- */
+async function fetchAll(){
+  var out = [], page = 1, last = 1;
+  while (page <= last && page <= MAX_PAGES){
+    var res = await fetch(API + "?page=" + page + "&limit=" + PER_PAGE, { credentials: "omit" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    var json = await res.json();
+    var rows = json.data || [];
+    out = out.concat(rows);
+    var meta = (json.meta && json.meta.last_page) ? json.meta : (json.meta && json.meta.meta) || {};
+    last = meta.last_page || 1;
+    if (!rows.length) break;
+    page++;
+  }
+  return out.map(normalize);
+}
+
+function stripHtml(h){
+  return String(h || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&#039;/g, "'")
+    .replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ").trim();
+}
+function cityOf(loc){
+  loc = loc || "";
+  if (/budapest/i.test(loc)) return "Budapest";
+  var first = loc.split(",")[0].trim();
+  return first || "Egyéb";
+}
+function normalize(j){
+  var av = j.avatar && j.avatar.presets ? j.avatar.presets.avatar : "";
+  return {
+    src: "zyntern.com",
+    key: "z" + j.id,
+    id: String(j.id),
+    title: j.title || "",
+    company: (j.company && j.company.name) || "",
+    logo: av ? ("https://zyntern.com" + av) : "",
+    location: j.location || "",
+    city: cityOf(j.location),
+    fields: (j.fields || []).map(function(f){ return f.name; }),
+    jobType: (j.job_type && (j.job_type.name || j.job_type.short_name)) || "",
+    remote: Number(j.remote_work_possible) === 1,
+    junior: !!j.is_junior,
+    degree: j.degree_level_name || "",
+    student: j.student_status_name || "",
+    hours: typeof j.work_hours === "number" ? j.work_hours : (parseInt(j.work_hours, 10) || 0),
+    pay: j.salary || 0,
+    payFmt: j.salary_formatted || "",
+    payPeriod: (j.salary_period_name || "").trim(),
+    payType: (j.salary_type_name || "").trim(),
+    langs: (j.languages || []).map(function(l){ return l.name + (l.level_name ? " – " + l.level_name : ""); }),
+    langNames: (j.languages || []).map(function(l){ return l.name; }),
+    skills: (j.skills || []).map(function(s){ return s.name; }),
+    posted: (j.publishes && j.publishes[0] && j.publishes[0].start_at) || "",
+    deadline: j.job_end_date_name || "",
+    start: j.job_start_date_name || "",
+    featured: !!j.featured,
+    url: j.url || ""
+  };
+}
+
+/* a beépített profession.hu sorokat ugyanarra az alakra hozzuk,
+   mint amit a Zyntern API ad, hogy egy listában kezelhessük őket */
+function expandProf(r){
+  var cls = r[15] || "";
+  var hm = cls.match(/Heti\s+(\d+)(?:\s*-\s*(\d+))?\s*óra/i);
+  return {
+    src: "profession.hu",
+    key: "p" + r[0],
+    id: String(r[0]),
+    title: r[1],
+    company: r[2],
+    logo: "",
+    location: r[4],
+    city: r[3],
+    fields: [r[5], r[6]].filter(Boolean),
+    jobType: r[7],
+    remote: !!r[8],
+    junior: false,
+    degree: "",
+    student: "",
+    hours: hm ? parseInt(hm[1], 10) : 0,
+    pay: r[9] || 0,
+    payFmt: r[10] || "",
+    payPeriod: r[11] || "",
+    payType: r[12] || "",
+    langs: [],
+    langNames: [],
+    skills: [],
+    posted: r[13] || "",
+    deadline: "",
+    start: "",
+    schedule: cls,
+    featured: false,
+    url: r[14]
+  };
+}
+
+/* ---------- segédfüggvények ---------- */
+function esc(s){
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+    return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c];
+  });
+}
+function parseDate(s){
+  if (!s) return null;
+  var d = new Date(String(s).replace(" ", "T"));
+  return isNaN(d.getTime()) ? null : d;
+}
+function ago(s){
+  var d = parseDate(s); if (!d) return "";
+  var days = Math.floor((Date.now() - d.getTime()) / 86400000);
+  if (days <= 0) return "ma";
+  if (days === 1) return "tegnap";
+  if (days < 31) return days + " napja";
+  var m = Math.floor(days / 30);
+  return m + " hónapja";
+}
+function payLabel(j){
+  if (!j.payFmt) return "";
+  return j.payFmt + (j.payPeriod ? " " + j.payPeriod : "") + (j.payType ? " " + j.payType : "");
+}
+function hourlyPay(j){
+  return j.payPeriod === "/ óra" ? (j.pay || 0) : 0;
+}
+function initials(name){
+  return String(name || "?").replace(/[^\p{L}\p{N} ]/gu, "").trim().split(/\s+/)
+    .slice(0, 2).map(function(w){ return w[0]; }).join("").toUpperCase() || "?";
+}
+function avatarHtml(j, cls){
+  return '<span class="avatar ' + (cls || "") + '">' +
+    '<span class="ini">' + esc(initials(j.company)) + '</span>' +
+    (j.logo ? '<img src="' + esc(j.logo) + '" alt="" loading="lazy" onerror="this.remove()">' : '') +
+    '</span>';
+}
+function loadSaved(){
+  try { return new Set(JSON.parse(localStorage.getItem("zy.saved") || "[]")); }
+  catch(e){ return new Set(); }
+}
+function persistSaved(){
+  try { localStorage.setItem("zy.saved", JSON.stringify(Array.from(SAVED))); } catch(e){}
+}
+
+/* ---------- szűrés ---------- */
+function matches(j, skip){
+  skip = skip || "";
+  if (state.q){
+    var hay = (j.title + " " + j.company + " " + j.fields.join(" ") + " " +
+               j.skills.join(" ")).toLowerCase();
+    var terms = state.q.toLowerCase().split(/\s+/).filter(Boolean);
+    for (var i = 0; i < terms.length; i++) if (hay.indexOf(terms[i]) === -1) return false;
+  }
+  if (state.qloc && (j.location + " " + j.city).toLowerCase().indexOf(state.qloc.toLowerCase()) === -1) return false;
+  if (skip !== "sources" && state.sources.size && !state.sources.has(j.src)) return false;
+  if (skip !== "fields" && state.fields.size && !j.fields.some(function(f){ return state.fields.has(f); })) return false;
+  if (skip !== "types"  && state.types.size  && !state.types.has(j.jobType)) return false;
+  if (skip !== "cities" && state.cities.size && !state.cities.has(j.city)) return false;
+  if (skip !== "langs"  && state.langs.size  && !j.langNames.some(function(l){ return state.langs.has(l); })) return false;
+  if (skip !== "minPay"   && state.minPay   && hourlyPay(j) < state.minPay) return false;
+  if (skip !== "maxHours" && state.maxHours && (!j.hours || j.hours > state.maxHours)) return false;
+  if (state.remote && !j.remote) return false;
+  if (state.noStudent && j.student !== "nem szükséges") return false;
+  if (state.savedOnly && !SAVED.has(j.id)) return false;
+  return true;
+}
+function results(){
+  var r = JOBS.filter(function(j){ return matches(j); });
+  var by = {
+    relevant: function(a,b){ return (b.featured - a.featured) || (parseDate(b.posted) - parseDate(a.posted)); },
+    new:      function(a,b){ return parseDate(b.posted) - parseDate(a.posted); },
+    old:      function(a,b){ return parseDate(a.posted) - parseDate(b.posted); },
+    pay:      function(a,b){ return hourlyPay(b) - hourlyPay(a); },
+    company:  function(a,b){ return a.company.localeCompare(b.company, "hu"); }
+  };
+  return r.sort(by[state.sort] || by.relevant);
+}
+/* egy facet értékeinek darabszáma úgy, hogy az adott facetet nem szűrjük */
+function facetCounts(key, valuesOf){
+  var pool = JOBS.filter(function(j){ return matches(j, key); });
+  var map = new Map();
+  pool.forEach(function(j){
+    valuesOf(j).forEach(function(v){ if (v) map.set(v, (map.get(v) || 0) + 1); });
+  });
+  return map;
+}
+
+/* ---------- szűrő definíciók ---------- */
+var FACETS = [
+  { key:"sources", label:"Forrás", set:function(){ return state.sources; },
+    values:function(j){ return [j.src]; } },
+  { key:"fields", label:"Szakterület", set:function(){ return state.fields; },
+    values:function(j){ return j.fields; } },
+  { key:"types",  label:"Munka típusa", set:function(){ return state.types; },
+    values:function(j){ return [j.jobType]; } },
+  { key:"cities", label:"Helyszín", set:function(){ return state.cities; },
+    values:function(j){ return [j.city]; } },
+  { key:"langs",  label:"Nyelv", set:function(){ return state.langs; },
+    values:function(j){ return j.langNames; } }
+];
+var PAY_STEPS = [
+  { v:0,    label:"Mindegy" },
+  { v:2000, label:"2 000 Ft / óra felett" },
+  { v:2300, label:"2 300 Ft / óra felett" },
+  { v:2500, label:"2 500 Ft / óra felett" },
+  { v:2700, label:"2 700 Ft / óra felett" }
+];
+var HOUR_STEPS = [
+  { v:0,  label:"Mindegy" },
+  { v:20, label:"Legfeljebb heti 20 óra" },
+  { v:25, label:"Legfeljebb heti 25 óra" },
+  { v:30, label:"Legfeljebb heti 30 óra" }
+];
+
+/* ---------- szűrősáv ---------- */
+var openPanel = null;
+
+function buildPills(){
+  var row = document.getElementById("pillrow");
+  row.textContent = "";
+
+  FACETS.forEach(function(f){
+    row.appendChild(multiPill(f));
+  });
+  row.appendChild(radioPill("minPay", "Fizetés", PAY_STEPS, function(v){
+    return v ? v.toLocaleString("hu-HU") + " Ft+" : null;
+  }));
+  row.appendChild(radioPill("maxHours", "Heti óraszám", HOUR_STEPS, function(v){
+    return v ? "≤ " + v + " óra" : null;
+  }));
+  row.appendChild(togglePill("remote", "Távmunka"));
+  row.appendChild(togglePill("noStudent", "Hallgatói jogviszony nélkül"));
+  row.appendChild(togglePill("savedOnly", "Mentettek"));
+
+  var clear = document.createElement("button");
+  clear.type = "button";
+  clear.className = "linkbtn";
+  clear.textContent = "Összes szűrő törlése";
+  clear.addEventListener("click", clearAll);
+  row.appendChild(clear);
+}
+
+function updatePill(btn, label, n){
+  btn.className = "pill" + (n ? " on" : "");
+  btn.innerHTML = esc(label) +
+    (n ? ' <span class="n">' + n + "</span>" : "") +
+    ' <span class="caret">▾</span>';
+}
+
+function pillShell(label, activeCount){
+  var b = document.createElement("button");
+  b.type = "button";
+  b.className = "pill" + (activeCount ? " on" : "");
+  b.setAttribute("aria-expanded", "false");
+  b.innerHTML = esc(label) +
+    (activeCount ? ' <span class="n">' + activeCount + "</span>" : "") +
+    ' <span class="caret">▾</span>';
+  return b;
+}
+
+function multiPill(f){
+  var host = document.createElement("span");
+  host.style.position = "relative";
+  var sel = f.set();
+  var btn = pillShell(f.label, sel.size);
+  host.appendChild(btn);
+
+  btn.addEventListener("click", function(e){
+    e.stopPropagation();
+    if (openPanel && openPanel.owner === btn) { closePanel(); return; }
+    closePanel();
+
+    var counts = facetCounts(f.key, f.values);
+    var all = Array.from(counts.entries()).sort(function(a,b){
+      return b[1] - a[1] || a[0].localeCompare(b[0], "hu");
+    });
+    sel.forEach(function(v){ if (!counts.has(v)) all.push([v, 0]); });
+
+    var panel = document.createElement("div");
+    panel.className = "panel";
+    var body = document.createElement("div");
+    body.className = "panel-body";
+
+    all.forEach(function(pair){
+      var val = pair[0], n = pair[1];
+      var lab = document.createElement("label");
+      lab.className = "opt" + (n === 0 && !sel.has(val) ? " disabled" : "");
+      var cb = document.createElement("input");
+      cb.type = "checkbox"; cb.checked = sel.has(val);
+      cb.addEventListener("change", function(){
+        if (cb.checked) sel.add(val); else sel.delete(val);
+        /* a panelt szándékosan nyitva hagyjuk, hogy többet is be lehessen pipálni */
+        updatePill(btn, f.label, sel.size);
+        renderResults();
+      });
+      var span = document.createElement("span");
+      span.className = "label"; span.textContent = val;
+      var cnt = document.createElement("span");
+      cnt.className = "cnt"; cnt.textContent = n;
+      lab.appendChild(cb); lab.appendChild(span); lab.appendChild(cnt);
+      body.appendChild(lab);
+    });
+
+    var foot = document.createElement("div");
+    foot.className = "panel-foot";
+    var clr = document.createElement("button");
+    clr.type = "button"; clr.className = "linkbtn"; clr.textContent = "Törlés";
+    clr.addEventListener("click", function(){ sel.clear(); closePanel(); render(); });
+    var done = document.createElement("button");
+    done.type = "button"; done.className = "btn-primary"; done.textContent = "Kész";
+    done.addEventListener("click", function(){ closePanel(); render(); });
+    foot.appendChild(clr); foot.appendChild(done);
+
+    panel.appendChild(body); panel.appendChild(foot);
+    panel.addEventListener("click", function(ev){ ev.stopPropagation(); });
+    host.appendChild(panel);
+    btn.setAttribute("aria-expanded", "true");
+    openPanel = { el: panel, owner: btn };
+  });
+
+  return host;
+}
+
+function radioPill(key, label, steps, fmt){
+  var host = document.createElement("span");
+  host.style.position = "relative";
+  var cur = state[key];
+  var btn = pillShell(fmt(cur) || label, cur ? 0 : 0);
+  if (cur) btn.className = "pill on";
+  host.appendChild(btn);
+
+  btn.addEventListener("click", function(e){
+    e.stopPropagation();
+    if (openPanel && openPanel.owner === btn) { closePanel(); return; }
+    closePanel();
+    var panel = document.createElement("div");
+    panel.className = "panel";
+    var body = document.createElement("div");
+    body.className = "panel-body radiorow";
+    steps.forEach(function(s){
+      var lab = document.createElement("label");
+      lab.className = "opt";
+      var rb = document.createElement("input");
+      rb.type = "radio"; rb.name = key + "-opt"; rb.checked = state[key] === s.v;
+      rb.addEventListener("change", function(){
+        state[key] = s.v; closePanel(); render();
+      });
+      var span = document.createElement("span");
+      span.className = "label"; span.textContent = s.label;
+      lab.appendChild(rb); lab.appendChild(span);
+      body.appendChild(lab);
+    });
+    panel.appendChild(body);
+    panel.addEventListener("click", function(ev){ ev.stopPropagation(); });
+    host.appendChild(panel);
+    btn.setAttribute("aria-expanded", "true");
+    openPanel = { el: panel, owner: btn };
+  });
+  return host;
+}
+
+function togglePill(key, label){
+  var b = document.createElement("button");
+  b.type = "button";
+  b.className = "pill toggle" + (state[key] ? " on" : "");
+  b.textContent = label;
+  b.setAttribute("aria-pressed", state[key] ? "true" : "false");
+  b.addEventListener("click", function(){ state[key] = !state[key]; render(); });
+  return b;
+}
+
+function closePanel(){
+  if (openPanel){
+    openPanel.owner.setAttribute("aria-expanded", "false");
+    openPanel.el.remove();
+    openPanel = null;
+  }
+}
+document.addEventListener("click", closePanel);
+document.addEventListener("keydown", function(e){ if (e.key === "Escape") { closePanel(); closeDetailMobile(); } });
+
+function clearAll(){
+  state.q = ""; state.qloc = "";
+  state.fields.clear(); state.types.clear(); state.cities.clear(); state.langs.clear();
+  state.sources.clear();
+  state.minPay = 0; state.maxHours = 0;
+  state.remote = false; state.noStudent = false; state.savedOnly = false;
+  document.getElementById("q").value = "";
+  document.getElementById("qloc").value = "";
+  render();
+}
+
+/* ---------- aktív szűrők chipjei ---------- */
+function renderActive(){
+  var row = document.getElementById("activerow");
+  row.textContent = "";
+  var items = [];
+  FACETS.forEach(function(f){
+    f.set().forEach(function(v){
+      items.push({ label: v, off: function(){ f.set().delete(v); } });
+    });
+  });
+  if (state.minPay) items.push({ label: state.minPay.toLocaleString("hu-HU") + " Ft / óra felett", off: function(){ state.minPay = 0; } });
+  if (state.maxHours) items.push({ label: "Legfeljebb heti " + state.maxHours + " óra", off: function(){ state.maxHours = 0; } });
+  if (state.remote) items.push({ label: "Távmunka", off: function(){ state.remote = false; } });
+  if (state.noStudent) items.push({ label: "Hallgatói jogviszony nélkül", off: function(){ state.noStudent = false; } });
+  if (state.savedOnly) items.push({ label: "Mentettek", off: function(){ state.savedOnly = false; } });
+
+  items.forEach(function(it){
+    var c = document.createElement("span");
+    c.className = "chip";
+    c.appendChild(document.createTextNode(it.label));
+    var x = document.createElement("button");
+    x.type = "button"; x.innerHTML = "&times;";
+    x.setAttribute("aria-label", it.label + " szűrő eltávolítása");
+    x.addEventListener("click", function(){ it.off(); render(); });
+    c.appendChild(x);
+    row.appendChild(c);
+  });
+}
+
+/* ---------- lista ---------- */
+function renderList(rows){
+  var list = document.getElementById("list");
+  list.textContent = "";
+
+  if (!rows.length){
+    var e = document.createElement("div");
+    e.className = "empty";
+    e.innerHTML = "<p>Nincs a szűrőknek megfelelő állás.</p>";
+    var b = document.createElement("button");
+    b.className = "ghost"; b.type = "button"; b.textContent = "Szűrők törlése";
+    b.addEventListener("click", clearAll);
+    e.appendChild(b);
+    list.appendChild(e);
+    return;
+  }
+
+  rows.forEach(function(j){
+    var card = document.createElement("button");
+    card.type = "button";
+    card.className = "card" + (state.selected === j.key ? " sel" : "");
+    card.setAttribute("aria-label", j.title + " – " + j.company + " – " + j.src);
+
+    var tags = [];
+    tags.push('<span class="srcbadge' + (j.src === "zyntern.com" ? " zy" : "") + '">' + esc(j.src) + "</span>");
+    if (j.jobType) tags.push('<span class="tag">' + esc(j.jobType) + "</span>");
+    if (j.remote) tags.push('<span class="tag remote">Távmunka</span>');
+    if (j.payFmt) tags.push('<span class="tag money">' + esc(payLabel(j)) + "</span>");
+    if (j.hours) tags.push('<span class="tag">heti ' + j.hours + " óra</span>");
+    j.fields.slice(0, 2).forEach(function(f){
+      tags.push('<span class="tag field">' + esc(f) + "</span>");
+    });
+
+    card.innerHTML =
+      avatarHtml(j) +
+      '<span class="card-main">' +
+        "<h3>" + esc(j.title) + "</h3>" +
+        '<span class="co">' + esc(j.company) + "</span>" +
+        '<span class="loc">' + esc(j.location || j.city) + "</span>" +
+        '<span class="tags">' + tags.join("") + "</span>" +
+      "</span>" +
+      '<span class="card-side">' +
+        '<span class="ago">' + esc(ago(j.posted)) + "</span>" +
+      "</span>";
+
+    var side = card.querySelector(".card-side");
+    var sv = document.createElement("span");
+    sv.className = "save" + (SAVED.has(j.key) ? " on" : "");
+    sv.setAttribute("role", "button");
+    sv.setAttribute("tabindex", "0");
+    sv.setAttribute("aria-label", SAVED.has(j.key) ? "Mentés visszavonása" : "Állás mentése");
+    sv.textContent = SAVED.has(j.key) ? "★" : "☆";
+    function toggleSave(ev){
+      ev.stopPropagation(); ev.preventDefault();
+      if (SAVED.has(j.key)) SAVED.delete(j.key); else SAVED.add(j.key);
+      persistSaved(); renderResults();
+    }
+    sv.addEventListener("click", toggleSave);
+    sv.addEventListener("keydown", function(ev){ if (ev.key === "Enter" || ev.key === " ") toggleSave(ev); });
+    side.appendChild(sv);
+
+    card.addEventListener("click", function(){ state.selected = j.key; renderResults(); });
+    list.appendChild(card);
+  });
+}
+
+/* ---------- részletek ---------- */
+function renderDetail(rows){
+  var host = document.getElementById("detailHost");
+  host.textContent = "";
+
+  var j = JOBS.filter(function(x){ return x.key === state.selected; })[0];
+  if (!j || !rows.some(function(x){ return x.key === j.key; })){
+    var p = document.createElement("div");
+    p.className = "placeholder";
+    p.innerHTML = '<span class="big">Válassz egy állást</span>' +
+      "<p>A bal oldali listából kattints egy hirdetésre, és itt megjelennek a részletei — fizetés, heti óraszám, nyelvek, elvárt készségek.</p>";
+    host.appendChild(p);
+    return;
+  }
+
+  var d = document.createElement("div");
+  d.className = "detail";
+
+  var facts = [];
+  if (j.payFmt)  facts.push(["Fizetés", payLabel(j), true]);
+  if (j.hours)   facts.push(["Heti óraszám", j.hours + " óra", true]);
+  if (j.jobType) facts.push(["Munka típusa", j.jobType, false]);
+  facts.push(["Munkavégzés", j.remote ? "Távmunka / hibrid lehetséges" : "Helyszíni", false]);
+  if (j.schedule) facts.push(["Munkarend", j.schedule, false]);
+  if (j.student) facts.push(["Hallgatói jogviszony", j.student, false]);
+  if (j.degree)  facts.push(["Végzettség", j.degree, false]);
+  if (j.start)   facts.push(["Kezdés", j.start, true]);
+  if (j.deadline) facts.push(["Jelentkezési határidő", j.deadline, true]);
+  if (j.posted)  facts.push(["Meghirdetve", ago(j.posted), false]);
+  facts.push(["Forrás", j.src + (j.src === "profession.hu" ? " · pillanatkép " + PROF_SNAPSHOT_DATE : " · élő"), false]);
+
+  d.innerHTML =
+    '<button class="close" type="button">← Vissza a listához</button>' +
+    '<div class="d-head">' + avatarHtml(j) +
+      "<div>" +
+        "<h2>" + esc(j.title) + "</h2>" +
+        '<div class="d-co">' + esc(j.company) + "</div>" +
+        '<div class="d-loc">' + esc(j.location || j.city) + "</div>" +
+      "</div>" +
+    "</div>" +
+    '<div class="d-actions">' +
+      '<a class="apply" href="' + esc(j.url) + '" target="_blank" rel="noopener noreferrer">Megnyitás a ' + esc(j.src) + "-on</a>" +
+      '<button class="ghost" type="button" id="dsave">' + (SAVED.has(j.key) ? "★ Mentve" : "☆ Mentés") + "</button>" +
+    "</div>" +
+    '<dl class="facts">' + facts.map(function(f){
+      return "<dt>" + esc(f[0]) + "</dt><dd" + (f[2] ? ' class="mono"' : "") + ">" + esc(f[1]) + "</dd>";
+    }).join("") + "</dl>" +
+    (j.fields.length ? '<div class="sec"><h4>Szakterület</h4><div class="tags">' +
+      j.fields.map(function(f){ return '<span class="tag">' + esc(f) + "</span>"; }).join("") + "</div></div>" : "") +
+    (j.langs.length ? '<div class="sec"><h4>Nyelvtudás</h4><div class="tags">' +
+      j.langs.map(function(l){ return '<span class="tag">' + esc(l) + "</span>"; }).join("") + "</div></div>" : "") +
+    (j.skills.length ? '<div class="sec"><h4>Készségek</h4><div class="tags">' +
+      j.skills.map(function(s){ return '<span class="tag">' + esc(s) + "</span>"; }).join("") + "</div></div>" : "");
+
+  d.querySelector(".close").addEventListener("click", closeDetailMobile);
+  d.querySelector("#dsave").addEventListener("click", function(){
+    if (SAVED.has(j.key)) SAVED.delete(j.key); else SAVED.add(j.key);
+    persistSaved(); renderResults();
+  });
+  host.appendChild(d);
+}
+function closeDetailMobile(){
+  if (window.matchMedia("(max-width:900px)").matches && state.selected){
+    state.selected = null; render();
+  }
+}
+
+/* ---------- fő render ---------- */
+/* a találatokat frissíti, a szűrősávot nem bántja — így a nyitott
+   legördülő panel nyitva marad több pipálás közben is */
+function renderResults(){
+  var rows = results();
+  renderActive();
+  document.getElementById("count").innerHTML =
+    "<b>" + rows.length + "</b> állás" +
+    (rows.length !== JOBS.length ? " a(z) " + JOBS.length + " közül" : "");
+  renderList(rows);
+  renderDetail(rows);
+}
+
+function render(){
+  buildPills();
+  renderResults();
+}
+
+/* ---------- betöltés ---------- */
+function setStatus(which, kind, text){
+  var dot = document.getElementById(which === "z" ? "dotZ" : "dotP");
+  var lab = document.getElementById(which === "z" ? "statZ" : "statP");
+  if (dot) dot.className = "dot " + kind;
+  if (lab) lab.textContent = text;
+}
+function showSkeleton(){
+  var list = document.getElementById("list");
+  list.textContent = "";
+  for (var i = 0; i < 6; i++){
+    var s = document.createElement("div");
+    s.className = "skel";
+    s.innerHTML = '<div class="sq"></div><div style="display:flex;flex-direction:column;gap:7px">' +
+      '<div class="bar" style="width:62%"></div><div class="bar" style="width:38%"></div>' +
+      '<div class="bar" style="width:80%"></div></div>';
+    list.appendChild(s);
+  }
+}
+function showError(err){
+  var n = document.getElementById("notice");
+  n.hidden = false;
+  n.className = "notice";
+  n.innerHTML =
+    "<b>A zyntern.com élő állásai most nem érhetők el</b>" +
+    "A lenti lista így csak a beépített profession.hu állásokat mutatja. " +
+    "A böngésző ezt a hibát adta: <code>" + esc(err && err.message ? err.message : String(err)) + "</code>. " +
+    "A leggyakoribb ok, hogy az oldalt olyan helyen nyitottad meg, ahol a külső hálózati hívás tiltott. " +
+    "Töltsd le a fájlt, és nyisd meg közvetlenül a böngésződben (dupla kattintás), vagy indíts egy helyi szervert a fájl mappájában:<br>" +
+    "<code>python -m http.server 8000</code> majd <code>http://localhost:8000/allaskereso.html</code>";
+}
+
+var PROF_JOBS = [];
+
+async function load(){
+  setStatus("z", "loading", "zyntern.com…");
+  document.getElementById("notice").hidden = true;
+
+  /* a beépített profession.hu adat azonnal látszik, nem kell rá várni */
+  PROF_JOBS = PROF_ROWS.map(expandProf);
+  setStatus("p", "snap", "profession.hu · pillanatkép " + PROF_SNAPSHOT_SHORT);
+  JOBS = PROF_JOBS.slice();
+  if (JOBS.length) render(); else showSkeleton();
+
+  try {
+    var zy = await fetchAll();
+    var t = new Date();
+    setStatus("z", "live", "zyntern.com · élő " +
+      String(t.getHours()).padStart(2, "0") + ":" + String(t.getMinutes()).padStart(2, "0"));
+    JOBS = zy.concat(PROF_JOBS);
+    render();
+  } catch(e){
+    setStatus("z", "snap", "zyntern.com · nem elérhető");
+    JOBS = PROF_JOBS.slice();
+    showError(e);
+    render();
+  }
+}
+
+/* ---------- események ---------- */
+var t1;
+document.getElementById("q").addEventListener("input", function(e){
+  clearTimeout(t1);
+  t1 = setTimeout(function(){ state.q = e.target.value.trim(); render(); }, 160);
+});
+var t2;
+document.getElementById("qloc").addEventListener("input", function(e){
+  clearTimeout(t2);
+  t2 = setTimeout(function(){ state.qloc = e.target.value.trim(); render(); }, 160);
+});
+document.getElementById("sort").addEventListener("change", function(e){
+  state.sort = e.target.value; render();
+});
+document.getElementById("refresh").addEventListener("click", load);
+
+load();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Budapest Internship Finder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --paper:#f4f6f4; --surface:#ffffff; --surface-2:#eef1ee;
+  --ink:#152220; --ink-2:#405049; --muted:#6d7d77;
+  --line:#dde3df; --line-strong:#c4cec9;
+  --accent:#0d6b58; --accent-ink:#ffffff; --accent-soft:#e2f0eb; --accent-line:#a9d3c7;
+  --warn:#8a5a00; --warn-soft:#fbf0dc;
+  --live:#1c7d45; --stale:#8a5a00;
+  --shadow:0 1px 2px rgba(21,34,32,.06), 0 8px 24px -12px rgba(21,34,32,.18);
+  --radius:10px;
+  --ui:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display:"Newsreader", Georgia, "Times New Roman", serif;
+  --mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0e1412; --surface:#161d1b; --surface-2:#1d2624;
+    --ink:#e7efeb; --ink-2:#b6c4bf; --muted:#879992;
+    --line:#28332f; --line-strong:#3a4844;
+    --accent:#4cbfa2; --accent-ink:#06211b; --accent-soft:#16302a; --accent-line:#2b5b4f;
+    --warn:#e0b060; --warn-soft:#2e2413;
+    --live:#5cc47f; --stale:#e0b060;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0e1412; --surface:#161d1b; --surface-2:#1d2624;
+  --ink:#e7efeb; --ink-2:#b6c4bf; --muted:#879992;
+  --line:#28332f; --line-strong:#3a4844;
+  --accent:#4cbfa2; --accent-ink:#06211b; --accent-soft:#16302a; --accent-line:#2b5b4f;
+  --warn:#e0b060; --warn-soft:#2e2413;
+  --live:#5cc47f; --stale:#e0b060;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:var(--ui); font-size:15px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+img{max-width:100%}
+[hidden]{display:none!important}
+button,input,select{font:inherit;color:inherit}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:4px}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky; top:env(safe-area-inset-top,0px); z-index:40;
+  background:var(--surface); border-bottom:1px solid var(--line);
+}
+.topbar-inner{
+  max-width:1280px; margin:0 auto; padding:12px 16px;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.brand{display:flex; align-items:baseline; gap:4px 10px; flex:1 1 auto; min-width:0; flex-wrap:wrap}
+.brand h1{
+  font-family:var(--display); font-weight:600; font-size:22px;
+  margin:0; letter-spacing:-.01em;
+}
+.brand .src{
+  font-family:var(--mono); font-size:11px; color:var(--muted);
+  letter-spacing:.04em; text-transform:uppercase;
+}
+.searchgroup{display:flex; flex:1 1 380px; min-width:260px; gap:0; border:1px solid var(--line-strong); border-radius:999px; background:var(--surface); overflow:hidden}
+.searchgroup input{
+  border:0; background:transparent; padding:9px 14px; min-width:0; flex:1 1 auto; font-size:14px;
+}
+.searchgroup input::placeholder{color:var(--muted)}
+.searchgroup .divider{width:1px; background:var(--line); flex:0 0 1px; margin:6px 0}
+.status{
+  display:flex; align-items:center; gap:10px 12px; flex:1 1 auto; min-width:0; flex-wrap:wrap;
+  font-family:var(--mono); font-size:11px; color:var(--muted);
+}
+.srcstat{display:inline-flex; align-items:center; gap:6px; min-width:0}
+.srcstat span:last-child{overflow-wrap:anywhere}
+.srcbadge{
+  font-family:var(--mono); font-size:10px; letter-spacing:.03em;
+  border:1px solid var(--line); border-radius:4px; padding:1px 5px; color:var(--muted);
+  background:var(--surface-2); white-space:nowrap;
+}
+.srcbadge.zy{border-color:var(--accent-line); background:var(--accent-soft); color:var(--ink)}
+.dot{width:7px; height:7px; border-radius:50%; background:var(--muted); flex:0 0 auto}
+.dot.live{background:var(--live)}
+.dot.snap{background:var(--stale)}
+.dot.loading{background:var(--muted); animation:pulse 1.1s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+.refresh{
+  border:1px solid var(--line-strong); background:var(--surface); color:var(--ink-2);
+  border-radius:999px; padding:5px 11px; font-size:12px; cursor:pointer;
+}
+.refresh:hover{background:var(--surface-2)}
+
+/* ---------- filter bar ---------- */
+.filterbar{
+  position:sticky; top:calc(env(safe-area-inset-top,0px) + 57px); z-index:30;
+  background:var(--paper); border-bottom:1px solid var(--line);
+}
+.filterbar-inner{max-width:1280px; margin:0 auto; padding:10px 16px}
+.pillrow{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+.pill{
+  position:relative; display:inline-flex; align-items:center; gap:6px;
+  border:1px solid var(--line-strong); background:var(--surface); color:var(--ink);
+  border-radius:999px; padding:6px 13px; font-size:13px; font-weight:500; cursor:pointer;
+  white-space:nowrap;
+}
+.pill:hover{background:var(--surface-2)}
+.pill[aria-expanded="true"]{border-color:var(--accent); box-shadow:0 0 0 1px var(--accent)}
+.pill.on{background:var(--accent); border-color:var(--accent); color:var(--accent-ink)}
+.pill .caret{font-size:9px; opacity:.75}
+.pill .n{
+  font-family:var(--mono); font-size:11px; background:rgba(255,255,255,.28);
+  border-radius:999px; padding:0 5px;
+}
+.pill.toggle{padding:6px 13px}
+.panel{
+  position:absolute; top:calc(100% + 6px); left:0; z-index:50;
+  background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--radius);
+  box-shadow:var(--shadow); width:288px; max-width:calc(100vw - 32px);
+  display:flex; flex-direction:column; max-height:min(420px, 60vh);
+}
+.panel-body{overflow-y:auto; padding:8px 6px; display:flex; flex-direction:column; gap:1px}
+.opt{
+  display:flex; align-items:center; gap:9px; padding:7px 10px; border-radius:6px;
+  cursor:pointer; font-size:13.5px; line-height:1.3;
+}
+.opt:hover{background:var(--surface-2)}
+.opt input{margin:0; accent-color:var(--accent); flex:0 0 auto}
+.opt .label{flex:1 1 auto; min-width:0}
+.opt .cnt{font-family:var(--mono); font-size:11px; color:var(--muted); flex:0 0 auto}
+.opt.disabled{opacity:.45}
+.panel-foot{
+  display:flex; justify-content:space-between; gap:8px; padding:8px 10px;
+  border-top:1px solid var(--line);
+}
+.linkbtn{
+  border:0; background:transparent; color:var(--accent); font-size:13px; font-weight:600;
+  cursor:pointer; padding:4px 6px; border-radius:6px;
+}
+.linkbtn:hover{background:var(--accent-soft)}
+.btn-primary{
+  border:0; background:var(--accent); color:var(--accent-ink); font-size:13px; font-weight:600;
+  border-radius:999px; padding:6px 16px; cursor:pointer;
+}
+.radiorow{display:flex; flex-direction:column; gap:1px}
+
+/* active chips */
+.activerow{
+  display:flex; gap:7px; flex-wrap:wrap; align-items:center;
+  max-width:1280px; margin:0 auto; padding:0 16px 10px;
+}
+.chip{
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--accent-soft); border:1px solid var(--accent-line); color:var(--ink);
+  border-radius:999px; padding:3px 6px 3px 11px; font-size:12.5px;
+}
+.chip button{
+  border:0; background:transparent; cursor:pointer; color:var(--ink-2);
+  font-size:14px; line-height:1; padding:2px 4px; border-radius:50%;
+}
+.chip button:hover{background:rgba(0,0,0,.08); color:var(--ink)}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1280px; margin:0 auto; padding:16px; padding-block:16px}
+.resultbar{
+  display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+  flex-wrap:wrap; margin-bottom:12px;
+}
+.count{font-family:var(--mono); font-size:12.5px; color:var(--ink-2)}
+.count b{font-weight:500; color:var(--ink)}
+.sortwrap{display:flex; align-items:center; gap:7px; font-size:13px; color:var(--muted)}
+.sortwrap select{
+  border:1px solid var(--line-strong); background:var(--surface); border-radius:999px;
+  padding:5px 10px; font-size:13px; cursor:pointer;
+}
+.split{display:grid; grid-template-columns:minmax(0,4fr) minmax(0,5fr); gap:16px; align-items:start}
+
+/* ---------- cards ---------- */
+.list{display:flex; flex-direction:column; gap:8px; min-width:0}
+.card{
+  display:grid; grid-template-columns:40px minmax(0,1fr) auto; gap:12px;
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+  padding:13px 14px; cursor:pointer; text-align:left; width:100%; font:inherit; color:inherit;
+}
+.card:hover{border-color:var(--line-strong); background:var(--surface)}
+.card.sel{border-color:var(--accent); box-shadow:inset 3px 0 0 var(--accent)}
+.avatar{
+  position:relative; width:40px; height:40px; border-radius:8px; overflow:hidden;
+  background:var(--surface-2); border:1px solid var(--line); flex:0 0 auto;
+}
+.avatar .ini{
+  position:absolute; inset:0; display:grid; place-items:center;
+  font-family:var(--mono); font-size:13px; color:var(--muted);
+}
+.avatar img{position:absolute; inset:0; width:100%; height:100%; object-fit:contain; background:var(--surface)}
+.card-main{min-width:0; display:flex; flex-direction:column; gap:3px}
+.card h3{
+  font-family:var(--display); font-weight:600; font-size:16.5px; margin:0;
+  line-height:1.25; text-wrap:balance;
+}
+.card .co{font-size:13.5px; color:var(--ink-2)}
+.card .loc{font-size:12.5px; color:var(--muted)}
+.tags{display:flex; gap:5px; flex-wrap:wrap; margin-top:5px}
+.tag{
+  font-size:11.5px; border:1px solid var(--line); background:var(--surface-2);
+  color:var(--ink-2); border-radius:5px; padding:1px 7px; white-space:nowrap;
+}
+.tag.money{font-family:var(--mono); background:var(--accent-soft); border-color:var(--accent-line); color:var(--ink)}
+.tag.remote{background:var(--accent-soft); border-color:var(--accent-line)}
+.tag.field{background:transparent}
+.card-side{display:flex; flex-direction:column; align-items:flex-end; gap:8px; flex:0 0 auto}
+.ago{font-family:var(--mono); font-size:11px; color:var(--muted); white-space:nowrap}
+.save{
+  border:1px solid var(--line-strong); background:var(--surface); border-radius:50%;
+  width:28px; height:28px; display:grid; place-items:center; cursor:pointer; font-size:13px;
+  color:var(--muted); padding:0;
+}
+.save:hover{border-color:var(--accent); color:var(--accent)}
+.save.on{background:var(--accent); border-color:var(--accent); color:var(--accent-ink)}
+
+/* ---------- detail ---------- */
+.detail{
+  position:sticky; top:calc(env(safe-area-inset-top,0px) + 118px);
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+  padding:20px; max-height:calc(100vh - 150px); overflow-y:auto;
+}
+.detail .close{display:none}
+.d-head{display:grid; grid-template-columns:48px minmax(0,1fr); gap:13px; align-items:start}
+.d-head .avatar{width:48px; height:48px}
+.detail h2{
+  font-family:var(--display); font-weight:600; font-size:23px; margin:0 0 2px;
+  line-height:1.2; text-wrap:balance;
+}
+.d-co{font-size:14.5px; color:var(--ink-2)}
+.d-loc{font-size:13px; color:var(--muted)}
+.d-actions{display:flex; gap:9px; margin:16px 0 18px; flex-wrap:wrap}
+.apply{
+  background:var(--accent); color:var(--accent-ink); border:0; border-radius:999px;
+  padding:9px 20px; font-size:14px; font-weight:600; text-decoration:none; display:inline-block;
+}
+.apply:hover{filter:brightness(1.08)}
+.ghost{
+  border:1px solid var(--line-strong); background:var(--surface); color:var(--ink);
+  border-radius:999px; padding:9px 16px; font-size:14px; font-weight:500; cursor:pointer;
+}
+.ghost:hover{background:var(--surface-2)}
+.facts{
+  display:grid; grid-template-columns:auto minmax(0,1fr); gap:7px 16px;
+  border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+  padding:14px 0; margin-bottom:16px; font-size:13.5px;
+}
+.facts dt{color:var(--muted); font-size:12.5px}
+.facts dd{margin:0; color:var(--ink)}
+.facts dd.mono{font-family:var(--mono); font-size:13px}
+.sec{margin-bottom:16px}
+.sec h4{
+  font-size:11.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--muted);
+  margin:0 0 7px; font-weight:600;
+}
+.sec p{margin:0; font-size:14px; color:var(--ink-2); line-height:1.6}
+.placeholder{
+  display:grid; place-items:center; text-align:center; padding:60px 24px; color:var(--muted);
+  background:var(--surface); border:1px dashed var(--line-strong); border-radius:var(--radius);
+}
+.placeholder p{max-width:34ch; margin:6px 0 0; font-size:14px}
+.placeholder .big{font-family:var(--display); font-size:19px; color:var(--ink-2)}
+
+/* states */
+.skel{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:13px 14px; display:grid; grid-template-columns:40px 1fr; gap:12px}
+.skel .bar{height:11px; border-radius:4px; background:var(--surface-2); animation:pulse 1.2s ease-in-out infinite}
+.skel .sq{width:40px; height:40px; border-radius:8px; background:var(--surface-2); animation:pulse 1.2s ease-in-out infinite}
+.notice{
+  background:var(--warn-soft); border:1px solid var(--warn); color:var(--ink);
+  border-radius:var(--radius); padding:14px 16px; font-size:13.5px; line-height:1.55;
+}
+.notice b{display:block; margin-bottom:4px; font-size:14px}
+.notice code{font-family:var(--mono); font-size:12.5px; background:rgba(0,0,0,.06); padding:1px 5px; border-radius:4px}
+.empty{padding:48px 20px; text-align:center; color:var(--muted)}
+
+@media (max-width:900px){
+  .split{grid-template-columns:1fr}
+  .detail{
+    position:fixed; inset:0; z-index:60; border-radius:0; border:0;
+    max-height:none; height:100%; overflow-y:auto;
+    padding:20px 16px calc(28px + env(safe-area-inset-bottom,0px));
+    padding-top:calc(20px + env(safe-area-inset-top,0px));
+  }
+  .detail .close{
+    display:inline-flex; align-items:center; gap:6px; margin-bottom:14px;
+    border:1px solid var(--line-strong); background:var(--surface); border-radius:999px;
+    padding:6px 14px; font-size:13px; cursor:pointer;
+  }
+  .filterbar{position:static}
+  .topbar{position:static}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms!important; transition-duration:.001ms!important}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <h1>Budapest Internship Finder</h1>
+      <span class="src">zyntern.com + profession.hu</span>
+    </div>
+    <div class="searchgroup">
+      <input id="q" type="search" placeholder="Job title, company or skill" aria-label="Search by job title, company or skill" autocomplete="off">
+      <span class="divider"></span>
+      <input id="qloc" type="search" placeholder="Location" aria-label="Search by location" autocomplete="off">
+    </div>
+    <div class="status">
+      <span class="srcstat"><span class="dot loading" id="dotZ"></span><span id="statZ">zyntern.com…</span></span>
+      <span class="srcstat"><span class="dot snap" id="dotP"></span><span id="statP">profession.hu</span></span>
+      <button class="refresh" id="refresh" type="button">Refresh</button>
+    </div>
+  </div>
+</header>
+
+<div class="filterbar">
+  <div class="filterbar-inner">
+    <div class="pillrow" id="pillrow"></div>
+  </div>
+  <div class="activerow" id="activerow"></div>
+</div>
+
+<div class="wrap">
+  <div id="notice" hidden></div>
+
+  <div class="resultbar">
+    <div class="count" id="count"></div>
+    <div class="sortwrap">
+      <label for="sort">Sort</label>
+      <select id="sort">
+        <option value="relevant">Featured &amp; newest</option>
+        <option value="new">Newest first</option>
+        <option value="old">Oldest first</option>
+        <option value="pay">Highest hourly pay</option>
+        <option value="company">Company (A–Z)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="split">
+    <div class="list" id="list"></div>
+    <div id="detailHost"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ------------------------------------------------------------------
+   1. TWO DATA SOURCES
+
+   a) zyntern.com — LIVE. It has a public JSON API: no key, no login, and
+      it sends "access-control-allow-origin: *", so this page can call it
+      straight from the browser and gets fresh data on every open.
+
+   b) profession.hu — SNAPSHOT. No API, and it refuses requests coming
+      from a browser page (it sends no CORS headers), so its jobs were
+      harvested in advance and are built into this file. Refreshing them
+      means re-running the harvest — the "Refresh" button cannot reload
+      this source.
+------------------------------------------------------------------ */
+var API = "https://zyntern.com/api/jobs";
+var PER_PAGE = 100;
+var MAX_PAGES = 12;
+
+var PROF_SNAPSHOT_DATE = "16 September 2026";
+var PROF_SNAPSHOT_SHORT = "16 Sep";
+/* Budapest, filtered to internship / student job / no-experience adverts and
+   narrowed to the four target fields (finance, sales, marketing, management).
+   Columns: id, title, company, city, location, field, sub-field, type,
+   remote, pay, pay formatted, period, gross/net, posted, link, schedule */
+var PROF_ROWS = [
+["2976925", "Marketing Gyakornok - Mezőgazdasági divízió - Diákmunka", "BASF Hungária Kft.", "Budapest", "Budapest XIII.kerület", "Marketing, Média, PR", "Marketing", "Diákmunka", 1, 2145, "2 145 – 2 400 Ft", "/ óra", "nettó", "2026-08-17 09:00:00", "https://www.profession.hu/allas/marketing-gyakornok-mezogazdasagi-divizio-diakmunka-basf-hungaria-kft-budapest-2976925", "Részmunkaidő • Kötetlen munkarend • Diákmunka"],
+["2978087", "Sales Manager | Budapest", "Grafton Recruitment", "Budapest", "Budapest", "Értékesítés, Kereskedelem", "Területi képviselő", "Nincs tapasztalat", 0, 0, "", "", "", "2026-08-18 09:00:00", "https://www.profession.hu/allas/sales-manager-budapest-grafton-recruitment-2978087", ""],
+["2978792", "Fotómodell", "Multi Job Iskolaszövetkezet", "Budapest", "Budapest XIII.kerület", "Marketing, Média, PR", "Fotózás", "Diákmunka", 0, 0, "", "", "", "2026-08-19 09:00:00", "https://www.profession.hu/allas/fotomodell-multi-job-iskolaszovetkezet-budapest-2978792", "Részmunkaidő • Kötetlen munkarend • Diákmunka"],
+["2978797", "Fotó asszisztens", "Multi Job Iskolaszövetkezet", "Budapest", "Budapest XIII.kerület", "Marketing, Média, PR", "Fotózás", "Diákmunka", 0, 0, "", "", "", "2026-08-19 09:00:00", "https://www.profession.hu/allas/foto-asszisztens-multi-job-iskolaszovetkezet-budapest-2978797", "Részmunkaidő • Kötetlen munkarend • Diákmunka"],
+["2978921", "Property Accountant / Pénzügyi munkatárs - ingatlan szektor", "Grafton Recruitment", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Könyvelés", "Nincs tapasztalat", 0, 0, "", "", "", "2026-08-19 09:00:00", "https://www.profession.hu/allas/property-accountant-penzugyi-munkatars-ingatlan-szektor-grafton-recruitment-2978921", ""],
+["2981009", "Pénzügyi sales gyakornok", "Geyer Csongor Roland", "Budapest", "Budapest VII.kerület", "Értékesítés, Kereskedelem", "Értékesítési munkatárs", "Szakmai gyakorlat", 1, 0, "", "", "", "2026-08-24 09:00:00", "https://www.profession.hu/allas/penzugyi-sales-gyakornok-geyer-csongor-roland-budapest-2981009", "Részmunkaidő • Kötetlen munkarend • Alkalmi munka • Szakmai gyakorlat • Vállalkozói • Diákmunka • Kisgyermekeseknek"],
+["2981093", "Hétvégi promóter diákmunka Soroksáron", "MADS - Márton Áron Iskolaszövetkezet", "Budapest", "Budapest XXIII.kerület", "Marketing, Média, PR", "Host, Hostess", "Diákmunka", 0, 2236, "2 236 Ft", "/ óra", "bruttó", "2026-08-24 09:00:00", "https://www.profession.hu/allas/hetvegi-promoter-diakmunka-soroksaron-mads-marton-aron-iskolaszovetkezet-budapest-2981093", "Teljes munkaidő • Kötött munkarend • Diákmunka"],
+["2981222", "Számviteli elemző", "Magyar Posta Zrt.", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Elemző, Tanácsadó", "Nincs tapasztalat", 0, 0, "", "", "", "2026-08-24 09:00:00", "https://www.profession.hu/allas/szamviteli-elemzo-magyar-posta-zrt-2981222", "Teljes munkaidő • Kötött munkarend • Alkalmazotti jogviszony"],
+["2981227", "FP&A Business Partner", "Grafton Recruitment", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Üzleti elemző", "Nincs tapasztalat", 1, 0, "", "", "", "2026-08-24 09:00:00", "https://www.profession.hu/allas/fp-a-business-partner-grafton-recruitment-2981227", ""],
+["2981325", "AP Team Leader", "Grafton Recruitment", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Számviteli munkatárs", "Nincs tapasztalat", 1, 0, "", "", "", "2026-08-24 09:00:00", "https://www.profession.hu/allas/ap-team-leader-grafton-recruitment-2981325", ""],
+["2981326", "Accounting and Reporting Expert  (with French or Italian)", "Grafton Recruitment", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Könyvelés", "Nincs tapasztalat", 0, 0, "", "", "", "2026-08-24 09:00:00", "https://www.profession.hu/allas/accounting-and-reporting-expert-with-french-or-italian-grafton-recruitment-2981326", ""],
+["2981327", "Cost Controller - Standard Costing & Manufacturing Finance", "Grafton Recruitment", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Kontrolling", "Nincs tapasztalat", 1, 0, "", "", "", "2026-08-24 09:00:00", "https://www.profession.hu/allas/cost-controller-standard-costing-manufacturing-finance-grafton-recruitment-2981327", ""],
+["2981328", "Junior Cash Management Specialist", "Grafton Recruitment", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Cash management", "Nincs tapasztalat", 0, 0, "", "", "", "2026-08-24 09:00:00", "https://www.profession.hu/allas/junior-cash-management-specialist-grafton-recruitment-2981328", ""],
+["2982167", "Könyvelő-bérszámfejtő", "MD Pacific Könyvelői és Tanácsadó Kft", "Budapest", "Budapest XIV.kerület", "Pénzügy, Könyvelés", "Könyvelés", "Szakmai gyakorlat", 0, 0, "", "", "", "2026-08-26 09:00:00", "https://www.profession.hu/allas/konyvelo-berszamfejto-md-pacific-konyveloi-es-tanacsado-kft-budapest-2982167/sponsored", "Teljes munkaidő • Alkalmazotti jogviszony"],
+["2982375", "Accounts Receivable Collection gyakornok - Budapest", "PannonDiák", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Követelés kezelés, Behajtás", "Diákmunka", 0, 2400, "2 400 – 2 650 Ft", "/ óra", "bruttó", "2026-08-25 09:00:00", "https://www.profession.hu/allas/accounts-receivable-collection-gyakornok-budapest-pannondiak-2982375", "Teljes munkaidő • Heti 25 óra • Kötött munkarend • Diákmunka"],
+["2982629", "Senior Accountant  / Chief Accountant - Heroes' Square area", "Grafton Recruitment", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Könyvelés", "Nincs tapasztalat", 0, 0, "", "", "", "2026-08-25 09:00:00", "https://www.profession.hu/allas/senior-accountant-chief-accountant-heroes-square-area-grafton-recruitment-2982629", ""],
+["2982780", "Könyvelő", "Magyarországi Református Egyház Bethesda Gyermekkórháza", "Budapest", "Budapest XIV.kerület", "Pénzügy, Könyvelés", "Könyvelés", "Nincs tapasztalat", 0, 0, "", "", "", "2026-08-25 09:00:00", "https://www.profession.hu/allas/konyvelo-magyarorszagi-reformatus-egyhaz-bethesda-gyermekkorhaza-budapest-2982780", "Teljes munkaidő • Kötött munkarend • Alkalmazotti jogviszony"],
+["2982992", "Tapasztalt könyvelő - Budapest, 9. kerület", "Grafton Recruitment", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Könyvelés", "Nincs tapasztalat", 1, 0, "", "", "", "2026-08-25 09:00:00", "https://www.profession.hu/allas/tapasztalt-konyvelo-budapest-kerulet-grafton-recruitment-2982992", ""],
+["2983648", "Spanish Speaking AP Accountant | Remote / Hybrid", "Grafton Recruitment", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Könyvelés", "Nincs tapasztalat", 1, 0, "", "", "", "2026-08-26 09:00:00", "https://www.profession.hu/allas/spanish-speaking-ap-accountant-remote-hybrid-grafton-recruitment-2983648", ""],
+["2983650", "AP Accountant - ES/DE/FR (Remote)", "Grafton Recruitment", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Könyvelés", "Nincs tapasztalat", 1, 0, "", "", "", "2026-08-26 09:00:00", "https://www.profession.hu/allas/ap-accountant-es-de-fr-remote-grafton-recruitment-2983650", ""],
+["2983896", "Külkereskedelmi munkatárs", "BECK AND PARTNERS Kft.", "Budapest", "Budapest XXII.kerület", "Értékesítés, Kereskedelem", "Külkereskedelmi bonyolító", "Nincs tapasztalat", 0, 0, "", "", "", "2026-08-26 09:00:00", "https://www.profession.hu/allas/kulkereskedelmi-munkatars-beck-and-partners-kft-budapest-2983896", "Teljes munkaidő • Kötött munkarend • Alkalmazotti jogviszony"],
+["2984335", "Host/Hostess (Deák Ferenc tér)", "CON-WORK Szolgáltató és Kereskedelmi Iskolaszövetkezet", "Budapest", "Budapest", "Marketing, Média, PR", "Host, Hostess", "Diákmunka", 0, 0, "", "", "", "2026-08-27 09:00:00", "https://www.profession.hu/allas/host-hostess-deak-ferenc-ter-con-work-szolgaltato-es-kereskedelmi-iskolaszovetkezet-2984335", "Teljes munkaidő • Kötött munkarend • Diákmunka • Alkalmazotti jogviszony"],
+["2984685", "Értékesítő(Budapest)", "BÁRDI AUTÓ ZRT.", "Budapest", "Budapest XVII.kerület", "Értékesítés, Kereskedelem", "Értékesítési munkatárs", "Nincs tapasztalat", 0, 0, "", "", "", "2026-08-27 09:00:00", "https://www.profession.hu/allas/ertekesito-budapest-bardi-auto-zrt-budapest-2984685", ""],
+["2984926", "Marketing asszisztens", "\"NOTUS MEDIA\" Kft.", "Budapest", "Budapest XII.kerület", "Marketing, Média, PR", "Marketing", "Nincs tapasztalat", 0, 0, "", "", "", "2026-09-03 09:00:00", "https://www.profession.hu/allas/marketing-asszisztens-notus-media-kft-budapest-2984926", "Teljes munkaidő • Kötött munkarend • Alkalmazotti jogviszony"],
+["2985013", "Pénzügyi munkatárs", "Papp Eszter", "Budapest", "Távmunka / Remote • Budapest XIII.kerület", "Értékesítés, Kereskedelem", "Pénzügyi szolgáltatások értékesítése", "Szakmai gyakorlat", 1, 0, "", "", "", "2026-08-27 09:00:00", "https://www.profession.hu/allas/penzugyi-munkatars-papp-eszter-budapest-2985013", "Részmunkaidő • Kötetlen munkarend • Szakmai gyakorlat • Kisgyermekeseknek"],
+["2985261", "Loyalty Partner Sourcer gyakornok - diákmunka", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Marketing, Média, PR", "Marketing", "Diákmunka", 1, 2500, "2 500 Ft", "/ óra", "bruttó", "2026-08-27 09:00:00", "https://www.profession.hu/allas/loyalty-partner-sourcer-gyakornok-diakmunka-mind-diak-szovetkezet-2985261", "Részmunkaidő • Kötött munkarend • Diákmunka"],
+["2985274", "Kritikus szervezet - Ellenálló képességért felelős vezető - EKFV", "MultiEgis Kft.", "Budapest", "Budapest III.kerület", "Marketing, Média, PR", "Márka- és Termékmenedzser", "Szakmai gyakorlat", 1, 0, "", "", "", "2026-08-27 09:00:00", "https://www.profession.hu/allas/kritikus-szervezet-ellenallo-kepessegert-felelos-vezeto-ekfv-multiegis-kft-budapest-2985274", "Teljes munkaidő • Kötetlen munkarend • Szakmai gyakorlat • Alkalmazotti jogviszony"],
+["2985928", "Számviteli asszisztens - Budapest", "Job Force Iskolaszövetkezet", "Budapest", "Budapest X.kerület", "Pénzügy, Könyvelés", "Pénzügyi asszisztens, Munkatárs", "Szakmai gyakorlat", 0, 2200, "2 200 Ft", "/ óra", "bruttó", "2026-08-28 09:00:00", "https://www.profession.hu/allas/szamviteli-asszisztens-budapest-job-force-iskolaszovetkezet-budapest-2985928", "Részmunkaidő • Kötetlen munkarend • Szakmai gyakorlat • Diákmunka"],
+["2986000", "Cost Support Specialist", "Grafton Recruitment", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Üzleti elemző", "Nincs tapasztalat", 1, 0, "", "", "", "2026-08-28 09:00:00", "https://www.profession.hu/allas/cost-support-specialist-grafton-recruitment-2986000", ""],
+["2986001", "Junior Finance Analyst", "Grafton Recruitment", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Üzleti elemző", "Nincs tapasztalat", 1, 0, "", "", "", "2026-08-28 09:00:00", "https://www.profession.hu/allas/junior-finance-analyst-grafton-recruitment-2986001", ""],
+["2986353", "ARC Analyst - for bp", "Grafton Recruitment", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Könyvelés", "Nincs tapasztalat", 1, 0, "", "", "", "2026-08-28 09:00:00", "https://www.profession.hu/allas/arc-analyst-for-bp-grafton-recruitment-2986353", ""],
+["2987294", "Senior Tax Specialist - CIT & ASC 740", "Grafton Recruitment", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Adótanácsadó, Szakértő", "Nincs tapasztalat", 1, 0, "", "", "", "2026-08-31 09:00:00", "https://www.profession.hu/allas/senior-tax-specialist-cit-asc-grafton-recruitment-2987294", ""],
+["2987510", "Social media koordinátor", "Longhorn Media kft", "Budapest", "Budapest V.kerület", "Marketing, Média, PR", "Online marketing", "Nincs tapasztalat", 1, 2100, "2 100 Ft", "/ óra", "nettó", "2026-08-31 09:00:00", "https://www.profession.hu/allas/social-media-koordinator-longhorn-media-kft-budapest-2987510", "Részmunkaidő • Napi 6 - 8 óra • Műszakos munkarend • 2 műszak • Alkalmazotti jogviszony"],
+["2987660", "Junior VAT Advisor", "Grafton Recruitment", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Adótanácsadó, Szakértő", "Nincs tapasztalat", 1, 0, "", "", "", "2026-08-31 09:00:00", "https://www.profession.hu/allas/junior-vat-advisor-grafton-recruitment-2987660", ""],
+["2987726", "B2B Sales Specialist - Budapest", "Grafton Recruitment", "Budapest", "Budapest", "Értékesítés, Kereskedelem", "Értékesítési munkatárs", "Nincs tapasztalat", 1, 0, "", "", "", "2026-08-31 09:00:00", "https://www.profession.hu/allas/b-b-sales-specialist-budapest-grafton-recruitment-2987726", ""],
+["2987792", "Számlázó munkatárs", "Humánia HRS Group", "Budapest", "Budapest IX.kerület", "Pénzügy, Könyvelés", "Számlázó, Pénztáros", "Nincs tapasztalat", 0, 0, "", "", "", "2026-08-31 09:00:00", "https://www.profession.hu/allas/szamlazo-munkatars-humania-hrs-group-budapest-2987792", "Teljes munkaidő • Kötött munkarend • Alkalmazotti jogviszony"],
+["2988531", "Junior pénzügyi gyakornok - Diákmunka", "Tudatos Diák Iskolaszövetkezet", "Budapest", "Budapest XI.kerület", "Pénzügy, Könyvelés", "Kontrolling", "Diákmunka", 1, 2500, "2 500 – 2 700 Ft", "/ óra", "bruttó", "2026-09-01 09:00:00", "https://www.profession.hu/allas/junior-penzugyi-gyakornok-diakmunka-tudatos-diak-iskolaszovetkezet-budapest-2988531", "Részmunkaidő • Kötetlen munkarend • Diákmunka"],
+["2988696", "Humán elemzési munkatárs", "Magyar Posta Zrt.", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Kontrolling", "Nincs tapasztalat", 0, 0, "", "", "", "2026-09-01 09:00:00", "https://www.profession.hu/allas/human-elemzesi-munkatars-magyar-posta-zrt-2988696", "Teljes munkaidő • Kötött munkarend • Alkalmazotti jogviszony"],
+["2988717", "Műszakvezető - Teljes munkaidő", "TESCO-GLOBAL ZRT.", "Budapest", "Budapest VII.kerület", "Értékesítés, Kereskedelem", "Kereskedő, Eladó", "Nincs tapasztalat", 0, 0, "", "", "", "2026-09-01 09:00:00", "https://www.profession.hu/allas/muszakvezeto-teljes-munkaido-tesco-global-zrt-budapest-2988717", ""],
+["2988735", "Sales, értékesítési gyakornok (WHC023938) - Diákmunka", "WHC Diák Iskolaszövetkezet", "Budapest", "Budapest XIII.kerület", "Értékesítés, Kereskedelem", "Kereskedő, Eladó", "Diákmunka", 0, 0, "", "", "", "2026-09-01 09:00:00", "https://www.profession.hu/allas/sales-ertekesitesi-gyakornok-whc-diakmunka-whc-diak-iskolaszovetkezet-budapest-2988735", "Teljes munkaidő • Kötött munkarend • Diákmunka"],
+["2988828", "Diákmunka - Értékesítéstámogató gyakornok (Nagyfeszültségű készülékek és berendezések üzletágába)", "MŰISZ Iskolaszövetkezet", "Budapest", "Budapest XIII.kerület", "Értékesítés, Kereskedelem", "Mérnök, Műszaki értékesítő", "Diákmunka", 0, 2300, "2 300 Ft", "/ óra", "bruttó", "2026-09-01 09:00:00", "https://www.profession.hu/allas/diakmunka-ertekesitestamogato-gyakornok-nagyfeszultsegu-keszulekek-es-berendezesek-uzletagaba-muisz-iskolaszovetkezet-budapest-2988828", "Teljes munkaidő • Kötött munkarend • Diákmunka"],
+["2988829", "Diákmunka - Order Management Intern", "MŰISZ Iskolaszövetkezet", "Budapest", "Budapest XIII.kerület", "Értékesítés, Kereskedelem", "Értékesítési munkatárs", "Diákmunka", 1, 2200, "2 200 Ft", "/ óra", "bruttó", "2026-09-01 09:00:00", "https://www.profession.hu/allas/diakmunka-order-management-intern-muisz-iskolaszovetkezet-budapest-2988829", "Teljes munkaidő • Kötött munkarend • Diákmunka"],
+["2988832", "Diákmunka - Könyvelő gyakornok", "MŰISZ Iskolaszövetkezet", "Budapest", "Budapest XIII.kerület", "Pénzügy, Könyvelés", "Pénzügyi asszisztens, Munkatárs", "Diákmunka", 0, 2000, "2 000 Ft", "/ óra", "bruttó", "2026-09-01 09:00:00", "https://www.profession.hu/allas/diakmunka-konyvelo-gyakornok-muisz-iskolaszovetkezet-budapest-2988832", "Teljes munkaidő • Kötött munkarend • Diákmunka"],
+["2988834", "Diákmunka - Üzleti tanácsadó gyakornok", "MŰISZ Iskolaszövetkezet", "Budapest", "Budapest XII.kerület", "Pénzügy, Könyvelés", "Üzleti elemző", "Diákmunka", 0, 2300, "2 300 Ft", "/ óra", "bruttó", "2026-09-01 09:00:00", "https://www.profession.hu/allas/diakmunka-uzleti-tanacsado-gyakornok-muisz-iskolaszovetkezet-budapest-2988834", "Teljes munkaidő • Kötött munkarend • Diákmunka"],
+["2988838", "Diákmunka - KÖNYVVIZSGÁLÓ GYAKORNOK", "MŰISZ Iskolaszövetkezet", "Budapest", "Budapest XIII.kerület", "Pénzügy, Könyvelés", "Könyvvizsgáló, Belsőellenőr", "Diákmunka", 0, 2000, "2 000 Ft", "/ óra", "bruttó", "2026-09-01 09:00:00", "https://www.profession.hu/allas/diakmunka-konyvvizsgalo-gyakornok-muisz-iskolaszovetkezet-budapest-2988838", "Teljes munkaidő • Kötött munkarend • Diákmunka"],
+["2988840", "Diákmunka - Értékesítési Asszisztens", "MŰISZ Iskolaszövetkezet", "Budapest", "Budapest IX.kerület", "Marketing, Média, PR", "Online marketing", "Diákmunka", 0, 2100, "2 100 Ft", "/ óra", "bruttó", "2026-09-01 09:00:00", "https://www.profession.hu/allas/diakmunka-ertekesitesi-asszisztens-muisz-iskolaszovetkezet-budapest-2988840", "Teljes munkaidő • Kötött munkarend • Diákmunka"],
+["2989217", "Ready for Your Next Finance Career Move? | Budapest SSC Opportunities", "Grafton Recruitment", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Könyvelés", "Nincs tapasztalat", 1, 0, "", "", "", "2026-09-01 09:00:00", "https://www.profession.hu/allas/ready-for-your-next-finance-career-move-budapest-ssc-opportunities-grafton-recruitment-2989217", ""],
+["2989220", "Contact Center értékesítési tanácsadó", "OTP Bank Nyrt.", "Budapest", "Budapest IX.kerület", "Értékesítés, Kereskedelem", "Értékesítési munkatárs", "Nincs tapasztalat", 1, 0, "", "", "", "2026-09-01 09:00:00", "https://www.profession.hu/allas/contact-center-ertekesitesi-tanacsado-otp-bank-nyrt-budapest-2989220", ""],
+["2989227", "Sales Internship", "L'OREAL Magyarország Kft.", "Budapest", "Budapest III.kerület", "Értékesítés, Kereskedelem", "Értékesítési munkatárs", "Szakmai gyakorlat", 1, 0, "", "", "", "2026-09-01 09:00:00", "https://www.profession.hu/allas/sales-internship-l-oreal-magyarorszag-kft-budapest-2989227", "Részmunkaidő • Kötött munkarend • Szakmai gyakorlat • Diákmunka"],
+["2989328", "Sales gyakornok (részmunkaidő/mellékállás)", "Nagy Máté Márk", "Budapest", "Budapest VII.kerület", "Értékesítés, Kereskedelem", "Pénzügyi szolgáltatások értékesítése", "Szakmai gyakorlat", 1, 0, "", "", "", "2026-09-01 09:00:00", "https://www.profession.hu/allas/sales-gyakornok-reszmunkaido-mellekallas-nagy-mate-mark-budapest-2989328", "Részmunkaidő • Heti 20 - 30 óra • Kötetlen munkarend • Szakmai gyakorlat • Vállalkozói • Diákmunka"],
+["2989367", "Junior Finance Specialist - Budapest", "Grafton Recruitment", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Elemző, Tanácsadó", "Nincs tapasztalat", 1, 0, "", "", "", "2026-09-01 09:00:00", "https://www.profession.hu/allas/junior-finance-specialist-budapest-grafton-recruitment-2989367", ""],
+["2989756", "Fotómodell", "Multi Job Iskolaszövetkezet", "Budapest", "Budapest XIII.kerület", "Marketing, Média, PR", "Fotózás", "Diákmunka", 0, 0, "", "", "", "2026-09-01 09:00:00", "https://www.profession.hu/allas/fotomodell-multi-job-iskolaszovetkezet-budapest-2989756", "Részmunkaidő • Kötetlen munkarend • Diákmunka"],
+["2990025", "Hétvégi promóter diákmunka a Mammutban", "MADS - Márton Áron Iskolaszövetkezet", "Budapest", "Budapest II.kerület", "Marketing, Média, PR", "Host, Hostess", "Diákmunka", 0, 2000, "2 000 Ft", "/ óra", "bruttó", "2026-09-02 09:00:00", "https://www.profession.hu/allas/hetvegi-promoter-diakmunka-a-mammutban-mads-marton-aron-iskolaszovetkezet-budapest-2990025", "Teljes munkaidő • Kötött munkarend • Diákmunka"],
+["2990075", "Sales Representative | r_d", "Laba Group Kft.", "Budapest", "Budapest III.kerület", "Értékesítés, Kereskedelem", "Értékesítési munkatárs", "Nincs tapasztalat", 1, 0, "", "", "", "2026-09-02 09:00:00", "https://www.profession.hu/allas/sales-representative-r-d-laba-group-kft-budapest-2990075", "Teljes munkaidő • Kötött munkarend • Alkalmazotti jogviszony"],
+["2990356", "Senior FP&A Analyst", "Grafton Recruitment", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Kontrolling", "Nincs tapasztalat", 1, 0, "", "", "", "2026-09-02 09:00:00", "https://www.profession.hu/allas/senior-fp-a-analyst-grafton-recruitment-2990356", ""],
+["2990490", "Sales Engineer - Fresh Graduate", "Huawei Technologies Hungary Kft.", "Budapest", "Budapest XIII.kerület", "Értékesítés, Kereskedelem", "Értékesítési munkatárs", "Nincs tapasztalat", 0, 0, "", "", "", "2026-09-02 09:00:00", "https://www.profession.hu/allas/sales-engineer-fresh-graduate-huawei-technologies-hungary-kft-budapest-2990490", "Teljes munkaidő • Kötött munkarend • Alkalmazotti jogviszony"],
+["2991173", "Hétvégi promóter diákmunka - Duna Pláza", "MADS - Márton Áron Iskolaszövetkezet", "Budapest", "Budapest XIII.kerület", "Marketing, Média, PR", "Host, Hostess", "Diákmunka", 0, 2000, "2 000 Ft", "/ óra", "bruttó", "2026-09-03 09:00:00", "https://www.profession.hu/allas/hetvegi-promoter-diakmunka-duna-plaza-mads-marton-aron-iskolaszovetkezet-budapest-2991173", "Teljes munkaidő • Kötött munkarend • Diákmunka"],
+["2991480", "Marketing gyakornok - diákmunka", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Marketing, Média, PR", "Marketing", "Diákmunka", 0, 2600, "2 600 Ft", "/ óra", "bruttó", "2026-09-03 09:00:00", "https://www.profession.hu/allas/marketing-gyakornok-diakmunka-mind-diak-szovetkezet-2991480", "Részmunkaidő • Kötött munkarend • Diákmunka"],
+["2992371", "Gépjármű értékesítési gyakornok", "Euroleasing Zrt.", "Budapest", "Budapest XIII.kerület", "Értékesítés, Kereskedelem", "Értékesítési munkatárs", "Szakmai gyakorlat", 0, 0, "", "", "", "2026-09-04 09:00:00", "https://www.profession.hu/allas/gepjarmu-ertekesitesi-gyakornok-euroleasing-zrt-budapest-2992371", "Teljes munkaidő • Kötetlen munkarend • Szakmai gyakorlat • Alkalmazotti jogviszony"],
+["2992421", "Finance Process Optimization Lead", "Grafton Recruitment", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Üzleti elemző", "Nincs tapasztalat", 1, 0, "", "", "", "2026-09-04 09:00:00", "https://www.profession.hu/allas/finance-process-optimization-lead-grafton-recruitment-2992421", ""],
+["2992422", "Payment Supervisor", "Grafton Recruitment", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Számviteli munkatárs", "Nincs tapasztalat", 1, 0, "", "", "", "2026-09-04 09:00:00", "https://www.profession.hu/allas/payment-supervisor-grafton-recruitment-2992422", ""],
+["2992424", "Junior Direct Tax Reporting & Compliance Specialist", "Grafton Recruitment", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Adótanácsadó, Szakértő", "Nincs tapasztalat", 1, 0, "", "", "", "2026-09-04 09:00:00", "https://www.profession.hu/allas/junior-direct-tax-reporting-compliance-specialist-grafton-recruitment-2992424", ""],
+["2992425", "Junior Cost Controller - Standard Costing & Manufacturing Finance", "Grafton Recruitment", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Kontrolling", "Nincs tapasztalat", 1, 0, "", "", "", "2026-09-04 09:00:00", "https://www.profession.hu/allas/junior-cost-controller-standard-costing-manufacturing-finance-grafton-recruitment-2992425", ""],
+["2992512", "Ügyfélkapcsolattartói és pénzügyi gyakornok", "Gillig Tímea", "Budapest", "Budapest VII.kerület", "Pénzügy, Könyvelés", "Elemző, Tanácsadó", "Szakmai gyakorlat", 1, 250, "250 – 350 Ft", "", "nettó", "2026-09-04 09:00:00", "https://www.profession.hu/allas/ugyfelkapcsolattartoi-es-penzugyi-gyakornok-gillig-timea-budapest-2992512", "Részmunkaidő • Heti 10 - 25 óra • Kötetlen munkarend • Szakmai gyakorlat • Alkalmazotti jogviszony • Kisgyermekeseknek"],
+["2992622", "CRM Specialist", "Grafton Recruitment", "Budapest", "Budapest", "Marketing, Média, PR", "Marketing", "Nincs tapasztalat", 1, 0, "", "", "", "2026-09-04 09:00:00", "https://www.profession.hu/allas/crm-specialist-grafton-recruitment-2992622", ""],
+["2993339", "Üzletvezető", "Ecofamily", "Budapest", "Budapest XI.kerület", "Értékesítés, Kereskedelem", "Kereskedő, Eladó", "Nincs tapasztalat", 0, 0, "", "", "", "2026-09-07 09:00:00", "https://www.profession.hu/allas/uzletvezeto-ecofamily-budapest-2993339", "Teljes munkaidő • Kötött munkarend • Alkalmazotti jogviszony"],
+["2993578", "Könyvelő gyakornok", "Process Solutions Kft", "Budapest", "Budapest XIII.kerület", "Pénzügy, Könyvelés", "Könyvelés", "Szakmai gyakorlat", 1, 0, "", "", "", "2026-09-07 09:00:00", "https://www.profession.hu/allas/konyvelo-gyakornok-process-solutions-kft-budapest-2993578", "Teljes munkaidő • Szakmai gyakorlat"],
+["2993596", "Diákmunka - Accounting Intern", "MŰISZ Iskolaszövetkezet", "Budapest", "Budapest XIII.kerület", "Pénzügy, Könyvelés", "Könyvelés", "Diákmunka", 1, 2200, "2 200 Ft", "/ óra", "bruttó", "2026-09-07 09:00:00", "https://www.profession.hu/allas/diakmunka-accounting-intern-muisz-iskolaszovetkezet-budapest-2993596", "Teljes munkaidő • Kötött munkarend • Diákmunka"],
+["2993599", "Diákmunka - Finance Intern", "MŰISZ Iskolaszövetkezet", "Budapest", "Budapest XIII.kerület", "Pénzügy, Könyvelés", "Pénzügyi asszisztens, Munkatárs", "Diákmunka", 1, 2200, "2 200 Ft", "/ óra", "bruttó", "2026-09-07 09:00:00", "https://www.profession.hu/allas/diakmunka-finance-intern-muisz-iskolaszovetkezet-budapest-2993599", "Teljes munkaidő • Kötött munkarend • Diákmunka"],
+["2993705", "Követeléskezelési gyakornok - Megbízási szerződéssel", "UniCredit Bank Zrt.", "Budapest", "Budapest V.kerület", "Pénzügy, Könyvelés", "Követelés kezelés, Behajtás", "Szakmai gyakorlat", 1, 0, "", "", "", "2026-09-07 09:00:00", "https://www.profession.hu/allas/koveteleskezelesi-gyakornok-megbizasi-szerzodessel-unicredit-bank-zrt-budapest-2993705", "Teljes munkaidő • Kötött munkarend • Szakmai gyakorlat • Diákmunka"],
+["2993804", "Sales manager", "Evergy Car Charging Kft.", "Budapest", "Budapest II.kerület", "Értékesítés, Kereskedelem", "Értékesítési munkatárs", "Szakmai gyakorlat", 0, 2600, "2 600 Ft", "/ óra", "nettó", "2026-09-07 09:00:00", "https://www.profession.hu/allas/sales-manager-evergy-car-charging-kft-budapest-2993804", "Részmunkaidő • Heti 30 óra • Kötetlen munkarend • Szakmai gyakorlat • Diákmunka"],
+["2993841", "Műszakvezető - Teljes munkaidő", "TESCO-GLOBAL ZRT.", "Budapest", "Budapest VIII.kerület", "Értékesítés, Kereskedelem", "Kereskedő, Eladó", "Nincs tapasztalat", 0, 0, "", "", "", "2026-09-07 09:00:00", "https://www.profession.hu/allas/muszakvezeto-teljes-munkaido-tesco-global-zrt-budapest-2993841", ""],
+["2993928", "Könyvelő gyakornok nyelvtudással - diákmunka", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Kontrolling", "Diákmunka", 0, 2800, "2 800 Ft", "/ óra", "bruttó", "2026-09-07 09:00:00", "https://www.profession.hu/allas/konyvelo-gyakornok-nyelvtudassal-diakmunka-mind-diak-szovetkezet-2993928", "Részmunkaidő • Kötött munkarend • Diákmunka"],
+["2994100", "HoReCa Területi Képviselő", "ROUST Hungary Kft.", "Budapest", "Budapest", "Értékesítés, Kereskedelem", "Területi képviselő", "Nincs tapasztalat", 0, 0, "", "", "", "2026-09-07 09:00:00", "https://www.profession.hu/allas/horeca-teruleti-kepviselo-roust-hungary-kft-budapest-2994100", "Teljes munkaidő • Kötetlen munkarend • Alkalmazotti jogviszony"],
+["2995395", "Műszaki támogató mérnök", "Profession Services", "Budapest", "Budapest", "Értékesítés, Kereskedelem", "Mérnök, Műszaki értékesítő", "Nincs tapasztalat", 0, 0, "", "", "", "2026-09-08 09:00:00", "https://www.profession.hu/allas/muszaki-tamogato-mernok-profession-services-2995395", "Teljes munkaidő • Kötött munkarend • Alkalmazotti jogviszony"],
+["2995475", "Értékesítő üzletkötő", "Ipari Elektronikai Kft.", "Budapest", "Budapest XXII.kerület", "Értékesítés, Kereskedelem", "Területi képviselő", "Diákmunka", 0, 0, "", "", "", "2026-09-08 09:00:00", "https://www.profession.hu/allas/ertekesito-uzletkoto-ipari-elektronikai-kft-budapest-2995475", "Teljes munkaidő • Kötött munkarend • Megváltozott munkaképességű • Diákmunka • Alkalmazotti jogviszony • Nyugdíj mellett végezhető"],
+["2995548", "Sales Manager (Academic & Research )", "Autonomous Technologies Kft.", "Budapest", "Budapest XIII.kerület", "Értékesítés, Kereskedelem", "Értékesítési, Kereskedelmi vezető", "Szakmai gyakorlat", 1, 3500, "3 500 Ft", "", "bruttó", "2026-09-08 09:00:00", "https://www.profession.hu/allas/sales-manager-academic-research-autonomous-technologies-kft-budapest-2995548", "Teljes munkaidő • Kötött munkarend • Szakmai gyakorlat • Alkalmazotti jogviszony"],
+["2995617", "Irodai host/hostess - Budapest", "Job Force Iskolaszövetkezet", "Budapest", "Budapest XIV.kerület", "Marketing, Média, PR", "Host, Hostess", "Diákmunka", 0, 2000, "2 000 Ft", "/ óra", "bruttó", "2026-09-08 09:00:00", "https://www.profession.hu/allas/irodai-host-hostess-budapest-job-force-iskolaszovetkezet-budapest-2995617", "Részmunkaidő • Kötött munkarend • Diákmunka"],
+["2995704", "Marketing specialista", "SYRTOS Kft.", "Budapest", "Budapest V.kerület", "Marketing, Média, PR", "Marketing", "Nincs tapasztalat", 0, 0, "", "", "", "2026-09-08 09:00:00", "https://www.profession.hu/allas/marketing-specialista-syrtos-kft-budapest-2995704", "Teljes munkaidő • Heti 20 - 40 óra • Kötött munkarend • Alkalmazotti jogviszony • Kisgyermekeseknek"],
+["2995807", "Finance Business Partner - Budapest", "Grafton Recruitment", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Pénzügyi, Számviteli vezető", "Nincs tapasztalat", 1, 0, "", "", "", "2026-09-08 09:00:00", "https://www.profession.hu/allas/finance-business-partner-budapest-grafton-recruitment-2995807", ""],
+["2995831", "Junior auditor (budapesti lokáció)", "PricewaterhouseCoopers Magyarország Kft.", "Budapest", "Budapest V.kerület", "Pénzügy, Könyvelés", "Könyvvizsgáló, Belsőellenőr", "Nincs tapasztalat", 0, 0, "", "", "", "2026-09-08 09:00:00", "https://www.profession.hu/allas/junior-auditor-budapesti-lokacio-pricewaterhousecoopers-magyarorszag-kft-budapest-2995831", "Teljes munkaidő • Kötött munkarend • Alkalmazotti jogviszony"],
+["2996528", "Contact Center értékesítési és ügyfélszolgálati tanácsadó", "OTP Bank Nyrt.", "Budapest", "Budapest IX.kerület", "Értékesítés, Kereskedelem", "Telefonos értékesítő", "Nincs tapasztalat", 1, 0, "", "", "", "2026-09-09 09:00:00", "https://www.profession.hu/allas/contact-center-ertekesitesi-es-ugyfelszolgalati-tanacsado-otp-bank-nyrt-budapest-2996528", ""],
+["2996539", "Spanish/Portuguese speaking VAT Analyst", "KPMG Global Services Hungary Kft.", "Budapest", "Budapest XIII.kerület", "Pénzügy, Könyvelés", "Adótanácsadó, Szakértő", "Szakmai gyakorlat", 1, 0, "", "", "", "2026-09-09 09:00:00", "https://www.profession.hu/allas/spanish-portuguese-speaking-vat-analyst-kpmg-global-services-hungary-kft-budapest-2996539", "Teljes munkaidő • Kötött munkarend • Szakmai gyakorlat • Alkalmazotti jogviszony"],
+["2996714", "Diákmunka - Könyvelő gyakornok", "MŰISZ Iskolaszövetkezet", "Budapest", "Budapest V.kerület", "Pénzügy, Könyvelés", "Számviteli munkatárs", "Diákmunka", 0, 2209, "2 209 Ft", "/ óra", "bruttó", "2026-09-09 09:00:00", "https://www.profession.hu/allas/diakmunka-konyvelo-gyakornok-muisz-iskolaszovetkezet-budapest-2996714", "Teljes munkaidő • Kötött munkarend • Diákmunka"],
+["2996747", "Marketing Kommunikációs Gyakornok (Német nyelvtudással)", "Fürge Diák Iskolaszövetkezet", "Budapest", "Budapest XI.kerület", "Marketing, Média, PR", "Marketing", "Szakmai gyakorlat", 0, 0, "", "", "", "2026-09-09 09:00:00", "https://www.profession.hu/allas/marketing-kommunikacios-gyakornok-nemet-nyelvtudassal-furge-diak-iskolaszovetkezet-budapest-2996747", "Részmunkaidő • Kötetlen munkarend • Alkalmi munka • Szakmai gyakorlat • Diákmunka • Alkalmazotti jogviszony"],
+["2996954", "Szenior pénzügyi szakértő - Hitel- és támogatáselszámolás terület - belváros", "Grafton Recruitment", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Cash management", "Nincs tapasztalat", 1, 0, "", "", "", "2026-09-09 09:00:00", "https://www.profession.hu/allas/szenior-penzugyi-szakerto-hitel-es-tamogataselszamolas-terulet-belvaros-grafton-recruitment-2996954", ""],
+["2997774", "Pénzügyi gyakornok - diákmunka", "Mind-Diák Szövetkezet", "Budapest", "Budapest VIII.", "Pénzügy, Könyvelés", "Kontrolling", "Diákmunka", 1, 2200, "2 200 Ft", "/ óra", "bruttó", "2026-09-10 09:00:00", "https://www.profession.hu/allas/penzugyi-gyakornok-diakmunka-mind-diak-szovetkezet-2997774", "Részmunkaidő • Kötött munkarend • Diákmunka"],
+["2997949", "Ruhaboli kisegítő - Diákmunka", "Pannon-Work Iskolaszövetkezet", "Budapest", "Budapest", "Értékesítés, Kereskedelem", "Értékesítési, Kereskedelmi vezető", "Diákmunka", 0, 1856, "1 856 – 2 100 Ft", "/ óra", "bruttó", "2026-09-10 09:00:00", "https://www.profession.hu/allas/ruhaboli-kisegito-diakmunka-pannon-work-iskolaszovetkezet-2997949", "Teljes munkaidő • Kötetlen munkarend • Diákmunka"],
+["2997959", "Digitális marketing gyakornok (WHC023961) - Diákmunka", "WHC Diák Iskolaszövetkezet", "Budapest", "Budapest VIII.kerület", "Marketing, Média, PR", "Online marketing", "Diákmunka", 1, 0, "", "", "", "2026-09-10 09:00:00", "https://www.profession.hu/allas/digitalis-marketing-gyakornok-whc-diakmunka-whc-diak-iskolaszovetkezet-budapest-2997959", "Teljes munkaidő • Kötött munkarend • Diákmunka"],
+["2997960", "Aktuárius gyakornok (biztosítási matematikus) (WHC023962) - Diákmunka", "WHC Diák Iskolaszövetkezet", "Budapest", "Budapest VIII.kerület", "Pénzügy, Könyvelés", "Elemző, Tanácsadó", "Diákmunka", 1, 0, "", "", "", "2026-09-10 09:00:00", "https://www.profession.hu/allas/aktuarius-gyakornok-biztositasi-matematikus-whc-diakmunka-whc-diak-iskolaszovetkezet-budapest-2997960", "Teljes munkaidő • Kötött munkarend • Diákmunka"],
+["2997999", "Czech or Slovak Speaking Senior Accounts Payable Associate", "TESCO-BST Zrt.", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Könyvelés", "Nincs tapasztalat", 0, 0, "", "", "", "2026-09-10 09:00:00", "https://www.profession.hu/allas/czech-or-slovak-speaking-senior-accounts-payable-associate-tesco-bst-zrt-2997999", ""],
+["2998085", "Közgazdasági elemző", "Magyar Nemzeti Bank", "Budapest", "Budapest I.kerület", "Pénzügy, Könyvelés", "Elemző, Tanácsadó", "Nincs tapasztalat", 0, 0, "", "", "", "2026-09-10 09:00:00", "https://www.profession.hu/allas/kozgazdasagi-elemzo-magyar-nemzeti-bank-budapest-2998085", "Teljes munkaidő • Kötött munkarend • Alkalmazotti jogviszony"],
+["2998102", "Diákmunka -  Pénzügyi gyakornok (Accounting)", "MŰISZ Iskolaszövetkezet", "Budapest", "Budapest XIII.kerület", "Pénzügy, Könyvelés", "Könyvelés", "Diákmunka", 0, 2150, "2 150 Ft", "/ óra", "bruttó", "2026-09-10 09:00:00", "https://www.profession.hu/allas/diakmunka-penzugyi-gyakornok-accounting-muisz-iskolaszovetkezet-budapest-2998102", "Teljes munkaidő • Kötött munkarend • Diákmunka"],
+["2998858", "Pénzügyi adminisztrátor / asszisztens", "DMS One Zrt.", "Budapest", "Budapest XI.kerület", "Pénzügy, Könyvelés", "Pénzügyi asszisztens, Munkatárs", "Nincs tapasztalat", 0, 0, "", "", "", "2026-09-11 09:00:00", "https://www.profession.hu/allas/penzugyi-adminisztrator-asszisztens-dms-one-zrt-budapest-2998858", "Teljes munkaidő • Kötött munkarend • 08:00 - 17:00 között • Alkalmazotti jogviszony"],
+["2998924", "Pénzügyi értékesítési gyakornok", "Horváth Tamás", "Budapest", "Budapest VII.kerület", "Értékesítés, Kereskedelem", "Pénzügyi szolgáltatások értékesítése", "Szakmai gyakorlat", 1, 0, "", "", "", "2026-09-11 09:00:00", "https://www.profession.hu/allas/penzugyi-ertekesitesi-gyakornok-horvath-tamas-budapest-2998924", "Részmunkaidő • Heti 15 - 20 óra • Kötetlen munkarend • Szakmai gyakorlat • Vállalkozói • Diákmunka"],
+["2998942", "Head of Retail - Nationwide Operations", "Grafton Recruitment", "Budapest", "Budapest", "Értékesítés, Kereskedelem", "Értékesítési, Kereskedelmi vezető", "Nincs tapasztalat", 1, 0, "", "", "", "2026-09-11 09:00:00", "https://www.profession.hu/allas/head-of-retail-nationwide-operations-grafton-recruitment-2998942", ""],
+["2998961", "Könyvelő gyakornok - diákmunka", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Kontrolling", "Diákmunka", 0, 2500, "2 500 Ft", "/ óra", "bruttó", "2026-09-11 09:00:00", "https://www.profession.hu/allas/konyvelo-gyakornok-diakmunka-mind-diak-szovetkezet-2998961", "Részmunkaidő • Kötött munkarend • Diákmunka"],
+["2999077", "Ci2C Collection Trainee (with German language knowledge) - diákmunka", "Mind-Diák Szövetkezet", "Budapest", "Budapest XIII.", "Pénzügy, Könyvelés", "Kontrolling", "Diákmunka", 1, 2400, "2 400 Ft", "/ óra", "bruttó", "2026-09-11 09:00:00", "https://www.profession.hu/allas/ci-c-collection-trainee-with-german-language-knowledge-diakmunka-mind-diak-szovetkezet-2999077", "Részmunkaidő • Kötött munkarend • Diákmunka"],
+["2999148", "Változásmenedzsment igazgatósági gyakornok - diákmunka", "Mind-Diák Szövetkezet", "Budapest", "Budapest XI.", "Cégvezetés, Menedzsment", "Interim menedzser", "Diákmunka", 1, 2332, "2 332 Ft", "/ óra", "bruttó", "2026-09-11 09:00:00", "https://www.profession.hu/allas/valtozasmenedzsment-igazgatosagi-gyakornok-diakmunka-mind-diak-szovetkezet-2999148", "Részmunkaidő • Kötött munkarend • Diákmunka"],
+["3000175", "Junior könyvelő", "Perscriptor Könyvelőiroda Kft", "Budapest", "Budapest VIII.kerület", "Pénzügy, Könyvelés", "Könyvelés", "Szakmai gyakorlat", 1, 0, "", "", "", "2026-09-14 09:00:00", "https://www.profession.hu/allas/junior-konyvelo-perscriptor-konyveloiroda-kft-budapest-3000175/sponsored", "Teljes munkaidő • Kötött munkarend • 08:00 - 16:30 között • Alkalmazotti jogviszony"],
+["3000190", "Turisztikai jegyértékesítő - Belvárosi helyszíneken - Diákmunka", "Tudatos Diák Iskolaszövetkezet", "Belvárosi helyszínek", "Belvárosi helyszínek", "Értékesítés, Kereskedelem", "Értékesítési munkatárs", "Diákmunka", 0, 2000, "2 000 – 3 500 Ft", "/ óra", "bruttó", "2026-09-14 09:00:00", "https://www.profession.hu/allas/turisztikai-jegyertekesito-belvarosi-helyszineken-diakmunka-tudatos-diak-iskolaszovetkezet-3000190", "Részmunkaidő • Kötetlen munkarend • Diákmunka"],
+["3000213", "Sales Representative (Értékesítési Munkatárs) - Budapest", "Yettel Hungary", "Budapest", "Budapest XII.kerület", "Értékesítés, Kereskedelem", "Értékesítési munkatárs", "Nincs tapasztalat", 0, 0, "", "", "", "2026-09-14 09:00:00", "https://www.profession.hu/allas/sales-representative-ertekesitesi-munkatars-budapest-yettel-hungary-budapest-3000213", ""],
+["3000285", "Márkaképviselő Promóter / Értékesítő - MM Pólus - Diákmunka", "Tudatos Diák Iskolaszövetkezet", "Budapest", "Budapest", "Értékesítés, Kereskedelem", "Értékesítési munkatárs", "Diákmunka", 0, 1900, "1 900 – 2 800 Ft", "/ óra", "bruttó", "2026-09-14 09:00:00", "https://www.profession.hu/allas/markakepviselo-promoter-ertekesito-mm-polus-diakmunka-tudatos-diak-iskolaszovetkezet-3000285", "Részmunkaidő • Kötetlen munkarend • Diákmunka"],
+["3000403", "Diákmunka - Market Analyst Trainee", "MŰISZ Iskolaszövetkezet", "Budapest", "Budapest IX.kerület", "Értékesítés, Kereskedelem", "Kereskedelmi munkatárs", "Diákmunka", 0, 2100, "2 100 Ft", "/ óra", "bruttó", "2026-09-14 09:00:00", "https://www.profession.hu/allas/diakmunka-market-analyst-trainee-muisz-iskolaszovetkezet-budapest-3000403", "Teljes munkaidő • Kötött munkarend • Diákmunka"],
+["3000405", "Diákmunka - Marketing trainee", "MŰISZ Iskolaszövetkezet", "Budapest", "Budapest IX.kerület", "Marketing, Média, PR", "Marketing", "Diákmunka", 0, 2100, "2 100 Ft", "/ óra", "bruttó", "2026-09-14 09:00:00", "https://www.profession.hu/allas/diakmunka-marketing-trainee-muisz-iskolaszovetkezet-budapest-3000405", "Teljes munkaidő • Kötött munkarend • Diákmunka"],
+["3000688", "HR gyakornok - diákmunka", "Mind-Diák Szövetkezet", "Budapest", "Budapest XI.", "Marketing, Média, PR", "Marketing", "Diákmunka", 1, 2550, "2 550 Ft", "/ óra", "bruttó", "2026-09-14 09:00:00", "https://www.profession.hu/allas/hr-gyakornok-diakmunka-mind-diak-szovetkezet-3000688", "Részmunkaidő • Kötött munkarend • Diákmunka"],
+["3000763", "Diákmunka - Sales Trainee", "MŰISZ Iskolaszövetkezet", "Budapest", "Budapest XIII.kerület", "Marketing, Média, PR", "Márka- és Termékmenedzser", "Diákmunka", 0, 2145, "2 145 Ft", "/ óra", "bruttó", "2026-09-14 09:00:00", "https://www.profession.hu/allas/diakmunka-sales-trainee-muisz-iskolaszovetkezet-budapest-3000763", "Teljes munkaidő • Kötött munkarend • Diákmunka"],
+["3001786", "Könyvelési gyakornok", "Fürge Diák Iskolaszövetkezet", "Budapest", "Budapest IX.kerület", "Pénzügy, Könyvelés", "Könyvelés", "Szakmai gyakorlat", 0, 2608, "2 608 Ft", "/ óra", "bruttó", "", "https://www.profession.hu/allas/konyvelesi-gyakornok-furge-diak-iskolaszovetkezet-budapest-3001786", "Részmunkaidő • Kötetlen munkarend • Szakmai gyakorlat • Alkalmazotti jogviszony"],
+["3001826", "Expert Accounts Receivable Accountant", "thyssenkrupp Components Technology Hungary Kft.", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Számviteli munkatárs", "Nincs tapasztalat", 0, 0, "", "", "", "", "https://www.profession.hu/allas/expert-accounts-receivable-accountant-thyssenkrupp-components-technology-hungary-kft-3001826", ""],
+["3001827", "Senior Accounts Payable Accountant", "thyssenkrupp Components Technology Hungary Kft.", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Számviteli munkatárs", "Nincs tapasztalat", 0, 0, "", "", "", "", "https://www.profession.hu/allas/senior-accounts-payable-accountant-thyssenkrupp-components-technology-hungary-kft-3001827", ""],
+["3001828", "Senior Fixed Asset Accountant", "thyssenkrupp Components Technology Hungary Kft.", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Számviteli munkatárs", "Nincs tapasztalat", 0, 0, "", "", "", "", "https://www.profession.hu/allas/senior-fixed-asset-accountant-thyssenkrupp-components-technology-hungary-kft-3001828", ""],
+["3001911", "Asset Accounting Analyst Intern  - diákmunka", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Kontrolling", "Diákmunka", 0, 2145, "2 145 Ft", "/ óra", "bruttó", "", "https://www.profession.hu/allas/asset-accounting-analyst-intern-diakmunka-mind-diak-szovetkezet-3001911", "Részmunkaidő • Kötött munkarend • Diákmunka"],
+["3002056", "Termékszakértő (Diákmunka)", "Student Iskolaszövetkezet", "Budapest", "Budapest", "Értékesítés, Kereskedelem", "Értékesítési munkatárs", "Diákmunka", 0, 2700, "2 700 Ft", "/ óra", "bruttó", "", "https://www.profession.hu/allas/termekszakerto-diakmunka-student-iskolaszovetkezet-budapest-3002056", "Részmunkaidő • Kötetlen munkarend • Diákmunka"],
+["3002075", "Területi koordinátor (Diákmunka - Budapest)", "Student Iskolaszövetkezet", "Budapest", "Budapest", "Értékesítés, Kereskedelem", "Területi képviselő", "Diákmunka", 0, 3000, "3 000 Ft", "/ óra", "bruttó", "", "https://www.profession.hu/allas/teruleti-koordinator-diakmunka-budapest-student-iskolaszovetkezet-budapest-3002075", "Részmunkaidő • Kötetlen munkarend • Diákmunka"],
+["3002220", "Ruhabolti kisegítés - Diákmunka", "Pannon-Work Iskolaszövetkezet", "Budapest", "Budapest", "Értékesítés, Kereskedelem", "Kereskedő, Eladó", "Diákmunka", 0, 2000, "2 000 – 3 000 Ft", "/ óra", "bruttó", "", "https://www.profession.hu/allas/ruhabolti-kisegites-diakmunka-pannon-work-iskolaszovetkezet-3002220", "Teljes munkaidő • Kötetlen munkarend • Diákmunka"],
+["3002257", "Xiaomi promóter - MediaMarkt Mammut - Diákmunka", "Tudatos Diák Iskolaszövetkezet", "Budapest", "Budapest", "Értékesítés, Kereskedelem", "Értékesítési munkatárs", "Diákmunka", 0, 1900, "1 900 – 3 000 Ft", "/ óra", "bruttó", "", "https://www.profession.hu/allas/xiaomi-promoter-mediamarkt-mammut-diakmunka-tudatos-diak-iskolaszovetkezet-3002257", "Részmunkaidő • Kötetlen munkarend • Diákmunka"],
+["3002264", "Financial Controller | Ready to Move from Accounting into Business Controlling?", "Grafton Recruitment", "Budapest", "Budapest", "Pénzügy, Könyvelés", "Kontrolling", "Nincs tapasztalat", 1, 0, "", "", "", "", "https://www.profession.hu/allas/financial-controller-ready-to-move-from-accounting-into-business-controlling-grafton-recruitment-3002264", ""],
+["3002702", "Szolgáltatásirányítási csoportvezető / Postahelyi helyettes", "Magyar Posta Zrt.", "Budapest", "Budapest IV.kerület", "Értékesítés, Kereskedelem", "Értékesítési, Kereskedelmi vezető", "Nincs tapasztalat", 0, 0, "", "", "", "", "https://www.profession.hu/allas/szolgaltatasiranyitasi-csoportvezeto-postahelyi-helyettes-magyar-posta-zrt-budapest-3002702", "Teljes munkaidő • Kötött munkarend • Alkalmazotti jogviszony"],
+["3002953", "Sales support manager", "Meteor Motortech Kft.", "Budapest", "Budapest IX.kerület", "Értékesítés, Kereskedelem", "Értékesítési munkatárs", "Nincs tapasztalat", 0, 0, "", "", "", "", "https://www.profession.hu/allas/sales-support-manager-meteor-motortech-kft-budapest-3002953", ""],
+["3002997", "Beszélgess, ajánlj és keress pénzt promóter diákmunkával az Alleeban - Diákmunka", "MADS - Márton Áron Iskolaszövetkezet", "Budapest", "Budapest XI.kerület", "Marketing, Média, PR", "Host, Hostess", "Diákmunka", 0, 2236, "2 236 Ft", "/ óra", "bruttó", "", "https://www.profession.hu/allas/beszelgess-ajanlj-es-keress-penzt-promoter-diakmunkaval-az-alleeban-diakmunka-mads-marton-aron-iskolaszovetkezet-budapest-3002997", "Teljes munkaidő • Kötött munkarend • Diákmunka"]
+];
+
+var JOBS = [];
+var SAVED = loadSaved();
+
+var state = {
+  q: "", qloc: "",
+  fields: new Set(), types: new Set(), cities: new Set(), langs: new Set(), sources: new Set(),
+  minPay: 0, maxHours: 0,
+  remote: false, noStudent: false, savedOnly: false,
+  sort: "relevant",
+  selected: null
+};
+
+/* ---------- API loading ---------- */
+async function fetchAll(){
+  var out = [], page = 1, last = 1;
+  while (page <= last && page <= MAX_PAGES){
+    var res = await fetch(API + "?page=" + page + "&limit=" + PER_PAGE, { credentials: "omit" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    var json = await res.json();
+    var rows = json.data || [];
+    out = out.concat(rows);
+    var meta = (json.meta && json.meta.last_page) ? json.meta : (json.meta && json.meta.meta) || {};
+    last = meta.last_page || 1;
+    if (!rows.length) break;
+    page++;
+  }
+  return out.map(normalize);
+}
+
+function stripHtml(h){
+  return String(h || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&#039;/g, "'")
+    .replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ").trim();
+}
+function cityOf(loc){
+  loc = loc || "";
+  if (/budapest/i.test(loc)) return "Budapest";
+  var first = loc.split(",")[0].trim();
+  return first || "Other";
+}
+function normalize(j){
+  var av = j.avatar && j.avatar.presets ? j.avatar.presets.avatar : "";
+  return {
+    src: "zyntern.com",
+    key: "z" + j.id,
+    id: String(j.id),
+    title: j.title || "",
+    company: (j.company && j.company.name) || "",
+    logo: av ? ("https://zyntern.com" + av) : "",
+    location: j.location || "",
+    city: cityOf(j.location),
+    fields: (j.fields || []).map(function(f){ return tr(FIELD_EN, f.name); }),
+    fieldsHu: (j.fields || []).map(function(f){ return f.name; }),
+    jobType: tr(TYPE_EN, (j.job_type && (j.job_type.name || j.job_type.short_name)) || ""),
+    remote: Number(j.remote_work_possible) === 1,
+    junior: !!j.is_junior,
+    degree: tr(VALUE_EN, j.degree_level_name || ""),
+    student: tr(VALUE_EN, j.student_status_name || ""),
+    hours: typeof j.work_hours === "number" ? j.work_hours : (parseInt(j.work_hours, 10) || 0),
+    pay: j.salary || 0,
+    payFmt: j.salary_formatted || "",
+    payPeriod: tr(PERIOD_EN, (j.salary_period_name || "").trim()),
+    payType: tr(PAYTYPE_EN, (j.salary_type_name || "").trim()),
+    langs: (j.languages || []).map(function(l){ return trLangLevel(l.name, l.level_name); }),
+    langNames: (j.languages || []).map(function(l){ return tr(LANG_EN, l.name); }),
+    skills: (j.skills || []).map(function(s){ return s.name; }),
+    posted: (j.publishes && j.publishes[0] && j.publishes[0].start_at) || "",
+    deadline: tr(VALUE_EN, j.job_end_date_name || ""),
+    start: tr(VALUE_EN, j.job_start_date_name || ""),
+    featured: !!j.featured,
+    url: j.url || ""
+  };
+}
+
+/* Reshape the built-in profession.hu rows into exactly the shape the Zyntern
+   API returns, so both sources can be handled as one list. */
+function expandProf(r){
+  var cls = r[15] || "";
+  var hm = cls.match(/Heti\s+(\d+)(?:\s*-\s*(\d+))?\s*óra/i);
+  return {
+    src: "profession.hu",
+    key: "p" + r[0],
+    id: String(r[0]),
+    title: r[1],
+    company: r[2],
+    logo: "",
+    location: r[4],
+    city: r[3],
+    fields: [tr(FIELD_EN, r[5]), tr(FIELD_EN, r[6])].filter(Boolean),
+    fieldsHu: [r[5], r[6]].filter(Boolean),
+    jobType: tr(TYPE_EN, r[7]),
+    remote: !!r[8],
+    junior: false,
+    degree: "",
+    student: "",
+    hours: hm ? parseInt(hm[1], 10) : 0,
+    pay: r[9] || 0,
+    payFmt: r[10] || "",
+    payPeriod: tr(PERIOD_EN, r[11] || ""),
+    payType: tr(PAYTYPE_EN, r[12] || ""),
+    langs: [],
+    langNames: [],
+    skills: [],
+    posted: r[13] || "",
+    deadline: "",
+    start: "",
+    schedule: trSchedule(cls),
+    featured: false,
+    url: r[14]
+  };
+}
+
+
+/* ---------- Hungarian → English vocabularies ----------
+   Both portals publish in Hungarian. Job titles and company names are left
+   exactly as posted — that is the real advert text. The closed vocabularies
+   below (categories, job types, languages, schedule terms) are translated so
+   the filters read in English. Anything not listed falls through unchanged,
+   so a new category appearing in the API still shows up rather than vanishing. */
+var FIELD_EN = {
+  "HR, vezetés-szervezés": "HR & Organisation",
+  "Tanácsadás & stratégia": "Consulting & Strategy",
+  "Környezet & energia": "Environment & Energy",
+  "Pénzügy & számvitel": "Finance & Accounting",
+  "Adminisztratív": "Administration",
+  "Logisztika & beszerzés": "Logistics & Procurement",
+  "Marketing & kommunikáció": "Marketing & Communications",
+  "Agrármérnök": "Agricultural Engineering",
+  "Értékesítés & kereskedelem": "Sales & Retail",
+  "IT software & webfejlesztés": "IT Software & Web Development",
+  "Villamosmérnök": "Electrical Engineering",
+  "Gépészmérnök": "Mechanical Engineering",
+  "Vegyészmérnök": "Chemical Engineering",
+  "Projektmenedzsment": "Project Management",
+  "Vendéglátás & turizmus": "Hospitality & Tourism",
+  "Mechatronikai mérnök": "Mechatronics Engineering",
+  "Építész & építőmérnök": "Architecture & Civil Engineering",
+  "IT üzemeltetés": "IT Operations",
+  "Fizikai munka": "Manual Work",
+  "Ügyfélszolgálat, Support": "Customer Service & Support",
+  "Folyamatmérnök": "Process Engineering",
+  "Közlekedés & járműmérnök": "Transport & Automotive Engineering",
+  "Épületgépész": "Building Services Engineering",
+  "Pénzügy, Könyvelés": "Finance & Accounting",
+  "Értékesítés, Kereskedelem": "Sales & Retail",
+  "Marketing, Média, PR": "Marketing, Media & PR",
+  "Cégvezetés, Menedzsment": "Management & Leadership",
+  "Adótanácsadó, Szakértő": "Tax Advisor",
+  "Elemző, Tanácsadó": "Analyst / Advisor",
+  "Fotózás": "Photography",
+  "Host, Hostess": "Host / Hostess",
+  "Interim menedzser": "Interim Manager",
+  "Kereskedelmi munkatárs": "Commercial Associate",
+  "Kereskedő, Eladó": "Retail Assistant",
+  "Kontrolling": "Controlling",
+  "Könyvelés": "Bookkeeping",
+  "Könyvvizsgáló, Belsőellenőr": "Auditor / Internal Audit",
+  "Követelés kezelés, Behajtás": "Receivables & Collections",
+  "Külkereskedelmi bonyolító": "Foreign Trade Administrator",
+  "Márka- és Termékmenedzser": "Brand & Product Manager",
+  "Mérnök, Műszaki értékesítő": "Technical Sales Engineer",
+  "Online marketing": "Online Marketing",
+  "Pénzügyi asszisztens, Munkatárs": "Finance Assistant",
+  "Pénzügyi szolgáltatások értékesítése": "Financial Services Sales",
+  "Pénzügyi, Számviteli vezető": "Finance & Accounting Lead",
+  "Számlázó, Pénztáros": "Invoicing & Cashier",
+  "Számviteli munkatárs": "Accounting Associate",
+  "Telefonos értékesítő": "Telesales",
+  "Területi képviselő": "Area Sales Representative",
+  "Értékesítési munkatárs": "Sales Associate",
+  "Értékesítési, Kereskedelmi vezető": "Sales & Commercial Lead",
+  "Üzleti elemző": "Business Analyst"
+};
+var TYPE_EN = {
+  "Gyakornoki állás": "Internship",
+  "Szakmai gyakorlat": "Internship (accredited)",
+  "Diákmunka": "Student job",
+  "Friss diplomás állás": "Graduate role",
+  "Junior, 1-3 év tapasztalat": "Junior (1–3 yrs)",
+  "Nincs tapasztalat": "No experience required"
+};
+var LANG_EN = {
+  "Magyar": "Hungarian",
+  "Angol": "English",
+  "Német": "German",
+  "Spanyol": "Spanish",
+  "Francia": "French",
+  "Olasz": "Italian",
+  "Orosz": "Russian",
+  "Lengyel": "Polish",
+  "Cseh": "Czech",
+  "Szlovák": "Slovak",
+  "Román": "Romanian",
+  "Horvát": "Croatian",
+  "Szerb": "Serbian",
+  "Szlovén": "Slovenian",
+  "Holland": "Dutch",
+  "Portugál": "Portuguese",
+  "Kínai": "Chinese",
+  "Japán": "Japanese",
+  "Koreai": "Korean",
+  "Arab": "Arabic",
+  "Görög": "Greek",
+  "Török": "Turkish",
+  "Ukrán": "Ukrainian",
+  "Bolgár": "Bulgarian",
+  "Svéd": "Swedish",
+  "Norvég": "Norwegian",
+  "Dán": "Danish",
+  "Finn": "Finnish"
+};
+var LEVEL_EN = {
+  "Anyanyelvi": "native",
+  "Felsőfokú tárgyalási szint": "advanced / business fluent",
+  "Limitált tárgyalási szint": "intermediate / working",
+  "Alapszint": "basic"
+};
+var VALUE_EN = {
+  "nem szükséges végzettség": "No degree required",
+  "szükséges": "Required",
+  "nem szükséges": "Not required",
+  "amint lehet": "As soon as possible",
+  "határozatlan": "Open-ended"
+};
+var SCHED_EN = {
+  "Teljes munkaidő": "Full-time",
+  "Részmunkaidő": "Part-time",
+  "Kötött munkarend": "fixed schedule",
+  "Kötetlen munkarend": "flexible schedule",
+  "Műszakos munkarend": "shift work",
+  "2 műszak": "2 shifts",
+  "Alkalmazotti jogviszony": "employment contract",
+  "Diákmunka": "student job",
+  "Szakmai gyakorlat": "accredited internship",
+  "Alkalmi munka": "casual work",
+  "Vállalkozói": "contractor",
+  "Kisgyermekeseknek": "suitable for parents",
+  "Megváltozott munkaképességű": "suitable for reduced work capacity",
+  "Nyugdíj mellett végezhető": "can be done alongside a pension"
+};
+var PERIOD_EN = {
+  "/ óra": "/ hour",
+  "/ nap": "/ day",
+  "/ hó": "/ month"
+};
+var PAYTYPE_EN = {
+  "bruttó": "gross",
+  "nettó": "net"
+};
+
+function tr(map, s){
+  s = (s == null ? "" : String(s)).trim();
+  return Object.prototype.hasOwnProperty.call(map, s) ? map[s] : s;
+}
+function trLangLevel(name, level){
+  var n = tr(LANG_EN, name);
+  return level ? n + " – " + tr(LEVEL_EN, level) : n;
+}
+/* "Részmunkaidő • Heti 25 óra • Kötött munkarend" →
+   "Part-time • 25 h/week • fixed schedule" */
+function trSchedule(s){
+  if (!s) return "";
+  return String(s).split("•").map(function(part){
+    var t = part.trim();
+    if (!t) return "";
+    var m = t.match(/^Heti\s+(\d+)(?:\s*-\s*(\d+))?\s*óra$/i);
+    if (m) return m[2] ? m[1] + "–" + m[2] + " h/week" : m[1] + " h/week";
+    m = t.match(/^Napi\s+(\d+)(?:\s*-\s*(\d+))?\s*óra$/i);
+    if (m) return m[2] ? m[1] + "–" + m[2] + " h/day" : m[1] + " h/day";
+    m = t.match(/^(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})\s*között$/);
+    if (m) return "between " + m[1] + "–" + m[2];
+    return tr(SCHED_EN, t);
+  }).filter(Boolean).join(" • ");
+}
+function group(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0"); }
+
+/* ---------- helpers ---------- */
+function esc(s){
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+    return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c];
+  });
+}
+function parseDate(s){
+  if (!s) return null;
+  var d = new Date(String(s).replace(" ", "T"));
+  return isNaN(d.getTime()) ? null : d;
+}
+function ago(s){
+  var d = parseDate(s); if (!d) return "";
+  var days = Math.floor((Date.now() - d.getTime()) / 86400000);
+  if (days <= 0) return "today";
+  if (days === 1) return "yesterday";
+  if (days < 31) return days + " days ago";
+  var m = Math.floor(days / 30);
+  return m + (m === 1 ? " month ago" : " months ago");
+}
+function payLabel(j){
+  if (!j.payFmt) return "";
+  return j.payFmt + (j.payPeriod ? " " + j.payPeriod : "") + (j.payType ? " " + j.payType : "");
+}
+function hourlyPay(j){
+  return j.payPeriod === "/ hour" ? (j.pay || 0) : 0;
+}
+function initials(name){
+  return String(name || "?").replace(/[^\p{L}\p{N} ]/gu, "").trim().split(/\s+/)
+    .slice(0, 2).map(function(w){ return w[0]; }).join("").toUpperCase() || "?";
+}
+function avatarHtml(j, cls){
+  return '<span class="avatar ' + (cls || "") + '">' +
+    '<span class="ini">' + esc(initials(j.company)) + '</span>' +
+    (j.logo ? '<img src="' + esc(j.logo) + '" alt="" loading="lazy" onerror="this.remove()">' : '') +
+    '</span>';
+}
+function loadSaved(){
+  try { return new Set(JSON.parse(localStorage.getItem("zy.saved") || "[]")); }
+  catch(e){ return new Set(); }
+}
+function persistSaved(){
+  try { localStorage.setItem("zy.saved", JSON.stringify(Array.from(SAVED))); } catch(e){}
+}
+
+/* ---------- filtering ---------- */
+function matches(j, skip){
+  skip = skip || "";
+  if (state.q){
+    /* search both languages: English categories and the Hungarian originals */
+    var hay = (j.title + " " + j.company + " " + j.fields.join(" ") + " " +
+               (j.fieldsHu || []).join(" ") + " " + j.jobType + " " +
+               j.skills.join(" ")).toLowerCase();
+    var terms = state.q.toLowerCase().split(/\s+/).filter(Boolean);
+    for (var i = 0; i < terms.length; i++) if (hay.indexOf(terms[i]) === -1) return false;
+  }
+  if (state.qloc && (j.location + " " + j.city).toLowerCase().indexOf(state.qloc.toLowerCase()) === -1) return false;
+  if (skip !== "sources" && state.sources.size && !state.sources.has(j.src)) return false;
+  if (skip !== "fields" && state.fields.size && !j.fields.some(function(f){ return state.fields.has(f); })) return false;
+  if (skip !== "types"  && state.types.size  && !state.types.has(j.jobType)) return false;
+  if (skip !== "cities" && state.cities.size && !state.cities.has(j.city)) return false;
+  if (skip !== "langs"  && state.langs.size  && !j.langNames.some(function(l){ return state.langs.has(l); })) return false;
+  if (skip !== "minPay"   && state.minPay   && hourlyPay(j) < state.minPay) return false;
+  if (skip !== "maxHours" && state.maxHours && (!j.hours || j.hours > state.maxHours)) return false;
+  if (state.remote && !j.remote) return false;
+  if (state.noStudent && j.student !== "Not required") return false;
+  if (state.savedOnly && !SAVED.has(j.id)) return false;
+  return true;
+}
+function results(){
+  var r = JOBS.filter(function(j){ return matches(j); });
+  var by = {
+    relevant: function(a,b){ return (b.featured - a.featured) || (parseDate(b.posted) - parseDate(a.posted)); },
+    new:      function(a,b){ return parseDate(b.posted) - parseDate(a.posted); },
+    old:      function(a,b){ return parseDate(a.posted) - parseDate(b.posted); },
+    pay:      function(a,b){ return hourlyPay(b) - hourlyPay(a); },
+    company:  function(a,b){ return a.company.localeCompare(b.company, "hu"); }
+  };
+  return r.sort(by[state.sort] || by.relevant);
+}
+/* Count a facet's values while ignoring that facet's own selection, so the
+   numbers show what each option would add rather than what is already on. */
+function facetCounts(key, valuesOf){
+  var pool = JOBS.filter(function(j){ return matches(j, key); });
+  var map = new Map();
+  pool.forEach(function(j){
+    valuesOf(j).forEach(function(v){ if (v) map.set(v, (map.get(v) || 0) + 1); });
+  });
+  return map;
+}
+
+/* ---------- filter definitions ---------- */
+var FACETS = [
+  { key:"sources", label:"Source", set:function(){ return state.sources; },
+    values:function(j){ return [j.src]; } },
+  { key:"fields", label:"Field", set:function(){ return state.fields; },
+    values:function(j){ return j.fields; } },
+  { key:"types",  label:"Job type", set:function(){ return state.types; },
+    values:function(j){ return [j.jobType]; } },
+  { key:"cities", label:"Location", set:function(){ return state.cities; },
+    values:function(j){ return [j.city]; } },
+  { key:"langs",  label:"Language", set:function(){ return state.langs; },
+    values:function(j){ return j.langNames; } }
+];
+var PAY_STEPS = [
+  { v:0,    label:"Any" },
+  { v:2000, label:"2 000 Ft / hour or more" },
+  { v:2300, label:"2 300 Ft / hour or more" },
+  { v:2500, label:"2 500 Ft / hour or more" },
+  { v:2700, label:"2 700 Ft / hour or more" }
+];
+var HOUR_STEPS = [
+  { v:0,  label:"Any" },
+  { v:20, label:"Max 20 h / week" },
+  { v:25, label:"Max 25 h / week" },
+  { v:30, label:"Max 30 h / week" }
+];
+
+/* ---------- filter bar ---------- */
+var openPanel = null;
+
+function buildPills(){
+  var row = document.getElementById("pillrow");
+  row.textContent = "";
+
+  FACETS.forEach(function(f){
+    row.appendChild(multiPill(f));
+  });
+  row.appendChild(radioPill("minPay", "Pay", PAY_STEPS, function(v){
+    return v ? group(v) + " Ft+" : null;
+  }));
+  row.appendChild(radioPill("maxHours", "Hours / week", HOUR_STEPS, function(v){
+    return v ? "≤ " + v + " h" : null;
+  }));
+  row.appendChild(togglePill("remote", "Remote"));
+  row.appendChild(togglePill("noStudent", "No student status needed"));
+  row.appendChild(togglePill("savedOnly", "Saved"));
+
+  var clear = document.createElement("button");
+  clear.type = "button";
+  clear.className = "linkbtn";
+  clear.textContent = "Clear all filters";
+  clear.addEventListener("click", clearAll);
+  row.appendChild(clear);
+}
+
+function updatePill(btn, label, n){
+  btn.className = "pill" + (n ? " on" : "");
+  btn.innerHTML = esc(label) +
+    (n ? ' <span class="n">' + n + "</span>" : "") +
+    ' <span class="caret">▾</span>';
+}
+
+function pillShell(label, activeCount){
+  var b = document.createElement("button");
+  b.type = "button";
+  b.className = "pill" + (activeCount ? " on" : "");
+  b.setAttribute("aria-expanded", "false");
+  b.innerHTML = esc(label) +
+    (activeCount ? ' <span class="n">' + activeCount + "</span>" : "") +
+    ' <span class="caret">▾</span>';
+  return b;
+}
+
+function multiPill(f){
+  var host = document.createElement("span");
+  host.style.position = "relative";
+  var sel = f.set();
+  var btn = pillShell(f.label, sel.size);
+  host.appendChild(btn);
+
+  btn.addEventListener("click", function(e){
+    e.stopPropagation();
+    if (openPanel && openPanel.owner === btn) { closePanel(); return; }
+    closePanel();
+
+    var counts = facetCounts(f.key, f.values);
+    var all = Array.from(counts.entries()).sort(function(a,b){
+      return b[1] - a[1] || a[0].localeCompare(b[0], "hu");
+    });
+    sel.forEach(function(v){ if (!counts.has(v)) all.push([v, 0]); });
+
+    var panel = document.createElement("div");
+    panel.className = "panel";
+    var body = document.createElement("div");
+    body.className = "panel-body";
+
+    all.forEach(function(pair){
+      var val = pair[0], n = pair[1];
+      var lab = document.createElement("label");
+      lab.className = "opt" + (n === 0 && !sel.has(val) ? " disabled" : "");
+      var cb = document.createElement("input");
+      cb.type = "checkbox"; cb.checked = sel.has(val);
+      cb.addEventListener("change", function(){
+        if (cb.checked) sel.add(val); else sel.delete(val);
+        /* deliberately leave the panel open so several boxes can be ticked */
+        updatePill(btn, f.label, sel.size);
+        renderResults();
+      });
+      var span = document.createElement("span");
+      span.className = "label"; span.textContent = val;
+      var cnt = document.createElement("span");
+      cnt.className = "cnt"; cnt.textContent = n;
+      lab.appendChild(cb); lab.appendChild(span); lab.appendChild(cnt);
+      body.appendChild(lab);
+    });
+
+    var foot = document.createElement("div");
+    foot.className = "panel-foot";
+    var clr = document.createElement("button");
+    clr.type = "button"; clr.className = "linkbtn"; clr.textContent = "Clear";
+    clr.addEventListener("click", function(){ sel.clear(); closePanel(); render(); });
+    var done = document.createElement("button");
+    done.type = "button"; done.className = "btn-primary"; done.textContent = "Done";
+    done.addEventListener("click", function(){ closePanel(); render(); });
+    foot.appendChild(clr); foot.appendChild(done);
+
+    panel.appendChild(body); panel.appendChild(foot);
+    panel.addEventListener("click", function(ev){ ev.stopPropagation(); });
+    host.appendChild(panel);
+    btn.setAttribute("aria-expanded", "true");
+    openPanel = { el: panel, owner: btn };
+  });
+
+  return host;
+}
+
+function radioPill(key, label, steps, fmt){
+  var host = document.createElement("span");
+  host.style.position = "relative";
+  var cur = state[key];
+  var btn = pillShell(fmt(cur) || label, cur ? 0 : 0);
+  if (cur) btn.className = "pill on";
+  host.appendChild(btn);
+
+  btn.addEventListener("click", function(e){
+    e.stopPropagation();
+    if (openPanel && openPanel.owner === btn) { closePanel(); return; }
+    closePanel();
+    var panel = document.createElement("div");
+    panel.className = "panel";
+    var body = document.createElement("div");
+    body.className = "panel-body radiorow";
+    steps.forEach(function(s){
+      var lab = document.createElement("label");
+      lab.className = "opt";
+      var rb = document.createElement("input");
+      rb.type = "radio"; rb.name = key + "-opt"; rb.checked = state[key] === s.v;
+      rb.addEventListener("change", function(){
+        state[key] = s.v; closePanel(); render();
+      });
+      var span = document.createElement("span");
+      span.className = "label"; span.textContent = s.label;
+      lab.appendChild(rb); lab.appendChild(span);
+      body.appendChild(lab);
+    });
+    panel.appendChild(body);
+    panel.addEventListener("click", function(ev){ ev.stopPropagation(); });
+    host.appendChild(panel);
+    btn.setAttribute("aria-expanded", "true");
+    openPanel = { el: panel, owner: btn };
+  });
+  return host;
+}
+
+function togglePill(key, label){
+  var b = document.createElement("button");
+  b.type = "button";
+  b.className = "pill toggle" + (state[key] ? " on" : "");
+  b.textContent = label;
+  b.setAttribute("aria-pressed", state[key] ? "true" : "false");
+  b.addEventListener("click", function(){ state[key] = !state[key]; render(); });
+  return b;
+}
+
+function closePanel(){
+  if (openPanel){
+    openPanel.owner.setAttribute("aria-expanded", "false");
+    openPanel.el.remove();
+    openPanel = null;
+  }
+}
+document.addEventListener("click", closePanel);
+document.addEventListener("keydown", function(e){ if (e.key === "Escape") { closePanel(); closeDetailMobile(); } });
+
+function clearAll(){
+  state.q = ""; state.qloc = "";
+  state.fields.clear(); state.types.clear(); state.cities.clear(); state.langs.clear();
+  state.sources.clear();
+  state.minPay = 0; state.maxHours = 0;
+  state.remote = false; state.noStudent = false; state.savedOnly = false;
+  document.getElementById("q").value = "";
+  document.getElementById("qloc").value = "";
+  render();
+}
+
+/* ---------- active filter chips ---------- */
+function renderActive(){
+  var row = document.getElementById("activerow");
+  row.textContent = "";
+  var items = [];
+  FACETS.forEach(function(f){
+    f.set().forEach(function(v){
+      items.push({ label: v, off: function(){ f.set().delete(v); } });
+    });
+  });
+  if (state.minPay) items.push({ label: group(state.minPay) + " Ft / hour or more", off: function(){ state.minPay = 0; } });
+  if (state.maxHours) items.push({ label: "Max " + state.maxHours + " h / week", off: function(){ state.maxHours = 0; } });
+  if (state.remote) items.push({ label: "Remote", off: function(){ state.remote = false; } });
+  if (state.noStudent) items.push({ label: "No student status needed", off: function(){ state.noStudent = false; } });
+  if (state.savedOnly) items.push({ label: "Saved", off: function(){ state.savedOnly = false; } });
+
+  items.forEach(function(it){
+    var c = document.createElement("span");
+    c.className = "chip";
+    c.appendChild(document.createTextNode(it.label));
+    var x = document.createElement("button");
+    x.type = "button"; x.innerHTML = "&times;";
+    x.setAttribute("aria-label", "Remove filter: " + it.label);
+    x.addEventListener("click", function(){ it.off(); render(); });
+    c.appendChild(x);
+    row.appendChild(c);
+  });
+}
+
+/* ---------- results list ---------- */
+function renderList(rows){
+  var list = document.getElementById("list");
+  list.textContent = "";
+
+  if (!rows.length){
+    var e = document.createElement("div");
+    e.className = "empty";
+    e.innerHTML = "<p>No jobs match these filters.</p>";
+    var b = document.createElement("button");
+    b.className = "ghost"; b.type = "button"; b.textContent = "Clear filters";
+    b.addEventListener("click", clearAll);
+    e.appendChild(b);
+    list.appendChild(e);
+    return;
+  }
+
+  rows.forEach(function(j){
+    var card = document.createElement("button");
+    card.type = "button";
+    card.className = "card" + (state.selected === j.key ? " sel" : "");
+    card.setAttribute("aria-label", j.title + " – " + j.company + " – " + j.src);
+
+    var tags = [];
+    tags.push('<span class="srcbadge' + (j.src === "zyntern.com" ? " zy" : "") + '">' + esc(j.src) + "</span>");
+    if (j.jobType) tags.push('<span class="tag">' + esc(j.jobType) + "</span>");
+    if (j.remote) tags.push('<span class="tag remote">Remote</span>');
+    if (j.payFmt) tags.push('<span class="tag money">' + esc(payLabel(j)) + "</span>");
+    if (j.hours) tags.push('<span class="tag">' + j.hours + " h/week</span>");
+    j.fields.slice(0, 2).forEach(function(f){
+      tags.push('<span class="tag field">' + esc(f) + "</span>");
+    });
+
+    card.innerHTML =
+      avatarHtml(j) +
+      '<span class="card-main">' +
+        "<h3>" + esc(j.title) + "</h3>" +
+        '<span class="co">' + esc(j.company) + "</span>" +
+        '<span class="loc">' + esc(j.location || j.city) + "</span>" +
+        '<span class="tags">' + tags.join("") + "</span>" +
+      "</span>" +
+      '<span class="card-side">' +
+        '<span class="ago">' + esc(ago(j.posted)) + "</span>" +
+      "</span>";
+
+    var side = card.querySelector(".card-side");
+    var sv = document.createElement("span");
+    sv.className = "save" + (SAVED.has(j.key) ? " on" : "");
+    sv.setAttribute("role", "button");
+    sv.setAttribute("tabindex", "0");
+    sv.setAttribute("aria-label", SAVED.has(j.key) ? "Remove from saved" : "Save job");
+    sv.textContent = SAVED.has(j.key) ? "★" : "☆";
+    function toggleSave(ev){
+      ev.stopPropagation(); ev.preventDefault();
+      if (SAVED.has(j.key)) SAVED.delete(j.key); else SAVED.add(j.key);
+      persistSaved(); renderResults();
+    }
+    sv.addEventListener("click", toggleSave);
+    sv.addEventListener("keydown", function(ev){ if (ev.key === "Enter" || ev.key === " ") toggleSave(ev); });
+    side.appendChild(sv);
+
+    card.addEventListener("click", function(){ state.selected = j.key; renderResults(); });
+    list.appendChild(card);
+  });
+}
+
+/* ---------- detail pane ---------- */
+function renderDetail(rows){
+  var host = document.getElementById("detailHost");
+  host.textContent = "";
+
+  var j = JOBS.filter(function(x){ return x.key === state.selected; })[0];
+  if (!j || !rows.some(function(x){ return x.key === j.key; })){
+    var p = document.createElement("div");
+    p.className = "placeholder";
+    p.innerHTML = '<span class="big">Select a job</span>' +
+      "<p>Pick an advert from the list on the left and its details appear here — pay, weekly hours, languages and the skills asked for.</p>";
+    host.appendChild(p);
+    return;
+  }
+
+  var d = document.createElement("div");
+  d.className = "detail";
+
+  var facts = [];
+  if (j.payFmt)  facts.push(["Pay", payLabel(j), true]);
+  if (j.hours)   facts.push(["Hours / week", j.hours + " h", true]);
+  if (j.jobType) facts.push(["Job type", j.jobType, false]);
+  facts.push(["Work mode", j.remote ? "Remote / hybrid possible" : "On-site", false]);
+  if (j.schedule) facts.push(["Schedule", j.schedule, false]);
+  if (j.student) facts.push(["Student status", j.student, false]);
+  if (j.degree)  facts.push(["Education", j.degree, false]);
+  if (j.start)   facts.push(["Start", j.start, true]);
+  if (j.deadline) facts.push(["Application deadline", j.deadline, true]);
+  if (j.posted)  facts.push(["Posted", ago(j.posted), false]);
+  facts.push(["Source", j.src + (j.src === "profession.hu" ? " · snapshot " + PROF_SNAPSHOT_DATE : " · live"), false]);
+
+  d.innerHTML =
+    '<button class="close" type="button">← Back to list</button>' +
+    '<div class="d-head">' + avatarHtml(j) +
+      "<div>" +
+        "<h2>" + esc(j.title) + "</h2>" +
+        '<div class="d-co">' + esc(j.company) + "</div>" +
+        '<div class="d-loc">' + esc(j.location || j.city) + "</div>" +
+      "</div>" +
+    "</div>" +
+    '<div class="d-actions">' +
+      '<a class="apply" href="' + esc(j.url) + '" target="_blank" rel="noopener noreferrer">Open on ' + esc(j.src) + "</a>" +
+      '<button class="ghost" type="button" id="dsave">' + (SAVED.has(j.key) ? "★ Saved" : "☆ Save") + "</button>" +
+    "</div>" +
+    '<dl class="facts">' + facts.map(function(f){
+      return "<dt>" + esc(f[0]) + "</dt><dd" + (f[2] ? ' class="mono"' : "") + ">" + esc(f[1]) + "</dd>";
+    }).join("") + "</dl>" +
+    (j.fields.length ? '<div class="sec"><h4>Field</h4><div class="tags">' +
+      j.fields.map(function(f){ return '<span class="tag">' + esc(f) + "</span>"; }).join("") + "</div></div>" : "") +
+    (j.langs.length ? '<div class="sec"><h4>Languages</h4><div class="tags">' +
+      j.langs.map(function(l){ return '<span class="tag">' + esc(l) + "</span>"; }).join("") + "</div></div>" : "") +
+    (j.skills.length ? '<div class="sec"><h4>Skills</h4><div class="tags">' +
+      j.skills.map(function(s){ return '<span class="tag">' + esc(s) + "</span>"; }).join("") + "</div></div>" : "");
+
+  d.querySelector(".close").addEventListener("click", closeDetailMobile);
+  d.querySelector("#dsave").addEventListener("click", function(){
+    if (SAVED.has(j.key)) SAVED.delete(j.key); else SAVED.add(j.key);
+    persistSaved(); renderResults();
+  });
+  host.appendChild(d);
+}
+function closeDetailMobile(){
+  if (window.matchMedia("(max-width:900px)").matches && state.selected){
+    state.selected = null; render();
+  }
+}
+
+/* ---------- main render ---------- */
+/* Redraw the results without touching the filter bar, so an open dropdown
+   stays open while several boxes are ticked. */
+function renderResults(){
+  var rows = results();
+  renderActive();
+  document.getElementById("count").innerHTML =
+    "<b>" + rows.length + "</b> " + (rows.length === 1 ? "job" : "jobs") +
+    (rows.length !== JOBS.length ? " of " + JOBS.length : "");
+  renderList(rows);
+  renderDetail(rows);
+}
+
+function render(){
+  buildPills();
+  renderResults();
+}
+
+/* ---------- loading ---------- */
+function setStatus(which, kind, text){
+  var dot = document.getElementById(which === "z" ? "dotZ" : "dotP");
+  var lab = document.getElementById(which === "z" ? "statZ" : "statP");
+  if (dot) dot.className = "dot " + kind;
+  if (lab) lab.textContent = text;
+}
+function showSkeleton(){
+  var list = document.getElementById("list");
+  list.textContent = "";
+  for (var i = 0; i < 6; i++){
+    var s = document.createElement("div");
+    s.className = "skel";
+    s.innerHTML = '<div class="sq"></div><div style="display:flex;flex-direction:column;gap:7px">' +
+      '<div class="bar" style="width:62%"></div><div class="bar" style="width:38%"></div>' +
+      '<div class="bar" style="width:80%"></div></div>';
+    list.appendChild(s);
+  }
+}
+function showError(err){
+  var n = document.getElementById("notice");
+  n.hidden = false;
+  n.className = "notice";
+  n.innerHTML =
+    "<b>The live zyntern.com jobs can't be reached right now</b>" +
+    "The list below therefore shows only the built-in profession.hu jobs. " +
+    "The browser reported: <code>" + esc(err && err.message ? err.message : String(err)) + "</code>. " +
+    "The usual cause is opening this page somewhere that blocks outgoing network calls. " +
+    "Download the file and open it directly in your browser (double-click it), or start a local server in its folder:<br>" +
+    "<code>python -m http.server 8000</code> majd <code>http://localhost:8000/internship_finder.html</code>";
+}
+
+var PROF_JOBS = [];
+
+async function load(){
+  setStatus("z", "loading", "zyntern.com…");
+  document.getElementById("notice").hidden = true;
+
+  /* the built-in profession.hu data shows immediately — no waiting on the network */
+  PROF_JOBS = PROF_ROWS.map(expandProf);
+  setStatus("p", "snap", "profession.hu · snapshot " + PROF_SNAPSHOT_SHORT);
+  JOBS = PROF_JOBS.slice();
+  if (JOBS.length) render(); else showSkeleton();
+
+  try {
+    var zy = await fetchAll();
+    var t = new Date();
+    setStatus("z", "live", "zyntern.com · live " +
+      String(t.getHours()).padStart(2, "0") + ":" + String(t.getMinutes()).padStart(2, "0"));
+    JOBS = zy.concat(PROF_JOBS);
+    render();
+  } catch(e){
+    setStatus("z", "snap", "zyntern.com · unavailable");
+    JOBS = PROF_JOBS.slice();
+    showError(e);
+    render();
+  }
+}
+
+/* ---------- events ---------- */
+var t1;
+document.getElementById("q").addEventListener("input", function(e){
+  clearTimeout(t1);
+  t1 = setTimeout(function(){ state.q = e.target.value.trim(); render(); }, 160);
+});
+var t2;
+document.getElementById("qloc").addEventListener("input", function(e){
+  clearTimeout(t2);
+  t2 = setTimeout(function(){ state.qloc = e.target.value.trim(); render(); }, 160);
+});
+document.getElementById("sort").addEventListener("change", function(e){
+  state.sort = e.target.value; render();
+});
+document.getElementById("refresh").addEventListener("click", load);
+
+load();
+})();
+</script>
+</body>
+</html>

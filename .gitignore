@@ -1,0 +1,27 @@
+# Build output from src/build_english.py (intermediate; the app itself is committed)
+build/
+
+# Test artefacts
+tests/screenshot.png
+node_modules/
+package-lock.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# ---------------------------------------------------------------------
+# PRIVACY: data/cv.json holds your real CV (name, education, employer).
+# If you ever make this repository PUBLIC, uncomment the next line first
+# and remove the file from git history.
+# data/cv.json
+# ---------------------------------------------------------------------
