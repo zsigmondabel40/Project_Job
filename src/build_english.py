@@ -5,13 +5,15 @@ Job titles and company names are left exactly as the portals publish them.
 Everything else — interface text plus the closed vocabularies (categories,
 job types, languages, schedule terms) — is translated.
 """
-import io, json, os
+import datetime, io, json, os, re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 
 SRC  = os.path.join(HERE, 'template_hu.html')             # Hungarian source template
 DATA = os.path.join(ROOT, 'data', 'prof_rows.json')       # profession.hu snapshot
+DATA_CV = os.path.join(ROOT, 'data', 'cvonline_rows.json') # cvonline.hu snapshot
+META = os.path.join(ROOT, 'data', 'snapshot_meta.json')   # when each snapshot was taken
 OUT  = os.path.join(ROOT, 'internship_finder.html')       # the finished app
 BUILD_DIR = os.path.join(ROOT, 'build')                   # intermediate, gitignored
 
@@ -24,6 +26,50 @@ def sub(old, new, count=1):
         missing.append(old[:70])
         return
     h = h.replace(old, new, count)
+
+def set_js_string(var_name, value):
+    """Overwrite `var <name> = "...";` whatever the template currently says.
+
+    Used for the snapshot dates, which change on every harvest. Matching on
+    the variable name rather than on the old date means the build keeps
+    working without anyone editing this file.
+    """
+    global h
+    pattern = re.compile(r'var\s+%s\s*=\s*"[^"]*";' % re.escape(var_name))
+    if not pattern.search(h):
+        missing.append('var %s = "...";' % var_name)
+        return
+    h = pattern.sub('var %s = "%s";' % (var_name, value), h, count=1)
+
+# --------------------------------------------------- snapshot dates
+# Written by the scrapers into data/snapshot_meta.json as {"profession.hu":
+# "2026-09-23", ...}. If that file is missing — a fresh clone that has never
+# been refreshed — fall back to the date the committed data was collected, so
+# the app never shows a date that is newer than its jobs.
+FALLBACK_DATES = {'profession.hu': '2026-09-16', 'cvonline.hu': '2026-09-23'}
+MONTHS_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+             'August', 'September', 'October', 'November', 'December']
+
+def snapshot_dates():
+    meta = {}
+    if os.path.exists(META):
+        try:
+            meta = json.load(io.open(META, encoding='utf-8'))
+        except ValueError:
+            print('WARNING: %s is not valid JSON — using the fallback dates.'
+                  % os.path.relpath(META, ROOT))
+    out = {}
+    for source, fallback in FALLBACK_DATES.items():
+        iso = meta.get(source) or fallback
+        try:
+            d = datetime.datetime.strptime(iso, '%Y-%m-%d').date()
+        except ValueError:
+            print('WARNING: bad date %r for %s — using %s.' % (iso, source, fallback))
+            d = datetime.datetime.strptime(fallback, '%Y-%m-%d').date()
+        # Built by hand, not with strftime: "%-d" is not valid on Windows.
+        out[source] = ('%d %s %d' % (d.day, MONTHS_EN[d.month - 1], d.year),
+                       '%d %s' % (d.day, MONTHS_EN[d.month - 1][:3]))
+    return out
 
 # ---------------------------------------------------------------- markup
 sub('<html lang="hu">', '<html lang="en">')
@@ -72,6 +118,16 @@ FIELD_EN = {
     "Értékesítés, Kereskedelem": "Sales & Retail",
     "Marketing, Média, PR": "Marketing, Media & PR",
     "Cégvezetés, Menedzsment": "Management & Leadership",
+    # cvonline.hu categories
+    "Pénzügy / Számvitel / Kontrolling": "Finance & Accounting",
+    "Értékesítés / Kereskedelem": "Sales & Retail",
+    "Marketing / Reklám / Média / PR": "Marketing, Media & PR",
+    "Szervezés / Menedzsment / Cégvezetés": "Management & Leadership",
+    "Üzleti támogató központok, SSC": "Shared Service Centre",
+    "Értékesítési asszisztens": "Sales Assistant",
+    "Pénzügyi asszisztens": "Finance Assistant",
+    "Marketing asszisztens": "Marketing Assistant",
+    "Energetika / Villamosság": "Energy & Electrical",
     # profession.hu sub-categories
     "Adótanácsadó, Szakértő": "Tax Advisor",
     "Elemző, Tanácsadó": "Analyst / Advisor",
@@ -106,6 +162,7 @@ TYPE_EN = {
     "Friss diplomás állás": "Graduate role",
     "Junior, 1-3 év tapasztalat": "Junior (1–3 yrs)",
     "Nincs tapasztalat": "No experience required",
+    "Szakmai gyakorlat, diákmunka": "Internship / student job",   # cvonline.hu
 }
 LANG_EN = {
     "Magyar": "Hungarian", "Angol": "English", "Német": "German", "Spanyol": "Spanish",
@@ -292,8 +349,6 @@ sub('facts.push(["Végzettség", j.degree, false]);', 'facts.push(["Education", 
 sub('facts.push(["Kezdés", j.start, true]);', 'facts.push(["Start", j.start, true]);')
 sub('facts.push(["Jelentkezési határidő", j.deadline, true]);', 'facts.push(["Application deadline", j.deadline, true]);')
 sub('facts.push(["Meghirdetve", ago(j.posted), false]);', 'facts.push(["Posted", ago(j.posted), false]);')
-sub('facts.push(["Forrás", j.src + (j.src === "profession.hu" ? " · pillanatkép " + PROF_SNAPSHOT_DATE : " · élő"), false]);',
-    'facts.push(["Source", j.src + (j.src === "profession.hu" ? " · snapshot " + PROF_SNAPSHOT_DATE : " · live"), false]);')
 sub('\'<button class="close" type="button">← Vissza a listához</button>\'',
     '\'<button class="close" type="button">← Back to list</button>\'')
 sub('rel="noopener noreferrer">Megnyitás a \' + esc(j.src) + "-on</a>"',
@@ -320,8 +375,11 @@ sub('setStatus("p", "snap", "profession.hu · pillanatkép " + PROF_SNAPSHOT_SHO
     'setStatus("p", "snap", "profession.hu · snapshot " + PROF_SNAPSHOT_SHORT);')
 sub('setStatus("z", "live", "zyntern.com · élő " +', 'setStatus("z", "live", "zyntern.com · live " +')
 sub('setStatus("z", "snap", "zyntern.com · nem elérhető");', 'setStatus("z", "snap", "zyntern.com · unavailable");')
-sub('var PROF_SNAPSHOT_DATE = "2026. szeptember 16.";', 'var PROF_SNAPSHOT_DATE = "16 September 2026";')
-sub('var PROF_SNAPSHOT_SHORT = "09.16.";', 'var PROF_SNAPSHOT_SHORT = "16 Sep";')
+DATES = snapshot_dates()
+set_js_string('PROF_SNAPSHOT_DATE',  DATES['profession.hu'][0])
+set_js_string('PROF_SNAPSHOT_SHORT', DATES['profession.hu'][1])
+set_js_string('CV_SNAPSHOT_DATE',    DATES['cvonline.hu'][0])
+set_js_string('CV_SNAPSHOT_SHORT',   DATES['cvonline.hu'][1])
 sub('http://localhost:8000/allaskereso.html', 'http://localhost:8000/internship_finder.html')
 
 # ---------------------------------------------------------------- comments
@@ -356,10 +414,6 @@ sub('''/* Budapest + gyakornoki / diákmunka / nincs tapasztalat szűrőkkel,
    narrowed to the four target fields (finance, sales, marketing, management).
    Columns: id, title, company, city, location, field, sub-field, type,
    remote, pay, pay formatted, period, gross/net, posted, link, schedule */''')
-sub('''/* a beépített profession.hu sorokat ugyanarra az alakra hozzuk,
-   mint amit a Zyntern API ad, hogy egy listában kezelhessük őket */''',
-'''/* Reshape the built-in profession.hu rows into exactly the shape the Zyntern
-   API returns, so both sources can be handled as one list. */''')
 sub('/* ---------- API betöltés ---------- */', '/* ---------- API loading ---------- */')
 sub('/* ---------- szűrés ---------- */', '/* ---------- filtering ---------- */')
 sub('/* egy facet értékeinek darabszáma úgy, hogy az adott facetet nem szűrjük */',
@@ -377,8 +431,6 @@ sub('''/* a találatokat frissíti, a szűrősávot nem bántja — így a nyito
    stays open while several boxes are ticked. */''')
 sub('/* ---------- fő render ---------- */', '/* ---------- main render ---------- */')
 sub('/* ---------- betöltés ---------- */', '/* ---------- loading ---------- */')
-sub('/* a beépített profession.hu adat azonnal látszik, nem kell rá várni */',
-    '/* the built-in profession.hu data shows immediately — no waiting on the network */')
 sub('/* ---------- események ---------- */', '/* ---------- events ---------- */')
 
 # ------------------------------------------------- bilingual search index
@@ -390,12 +442,38 @@ sub('    fields: (j.fields || []).map(function(f){ return tr(FIELD_EN, f.name); 
 sub('    fields: [tr(FIELD_EN, r[5]), tr(FIELD_EN, r[6])].filter(Boolean),',
     '    fields: [tr(FIELD_EN, r[5]), tr(FIELD_EN, r[6])].filter(Boolean),\n'
     '    fieldsHu: [r[5], r[6]].filter(Boolean),')
+sub('/* a két beépített forrás azonnal látszik, nem kell rájuk várni */',
+    '/* both built-in sources show immediately — no waiting on the network */')
+sub('setStatus("c", "snap", "cvonline.hu · pillanatkép " + CV_SNAPSHOT_SHORT);',
+    'setStatus("c", "snap", "cvonline.hu · snapshot " + CV_SNAPSHOT_SHORT);')
+sub('''/* cvonline.hu: Budapest + "Szakmai gyakorlat, diákmunka" szűrő teljes találati
+   listája (329 hirdetés) a négy célterületre szűkítve. Ugyanaz a 16 oszlop,
+   mint a profession.hu soroknál — cvonline a kártyán nem közöl fizetést. */''',
+'''/* cvonline.hu: the complete result set of their Budapest + "Szakmai gyakorlat,
+   diákmunka" (internship / student job) filter — 329 adverts — narrowed to the
+   four target fields. Same 16 columns as the profession.hu rows; cvonline does
+   not publish pay on its cards, so those columns are empty. */''')
 sub('    var hay = (j.title + " " + j.company + " " + j.fields.join(" ") + " " +\n'
     '               j.skills.join(" ")).toLowerCase();',
     '    /* search both languages: English categories and the Hungarian originals */\n'
     '    var hay = (j.title + " " + j.company + " " + j.fields.join(" ") + " " +\n'
     '               (j.fieldsHu || []).join(" ") + " " + j.jobType + " " +\n'
     '               j.skills.join(" ")).toLowerCase();')
+
+# --- blocks that changed when cvonline.hu was added as a third source ---
+sub("""/* a beépített pillanatkép-sorokat (profession.hu és cvonline.hu egyforma,
+   16 oszlopos alakban) ugyanarra az alakra hozzuk, mint amit a Zyntern API
+   ad, hogy egy listában lehessen kezelni mindhárom forrást */""",
+"""/* Reshape the built-in snapshot rows (profession.hu and cvonline.hu share the
+   same 16-column shape) into exactly the shape the Zyntern API returns, so all
+   three sources can be handled as one list. */""")
+
+# The "Source" fact spans four lines. Match each line on its own: a multi-line
+# match silently stops working the moment the block is reindented.
+sub('facts.push(["Forr\u00e1s", j.src + (', 'facts.push(["Source", j.src + (')
+sub('" \u00b7 pillanatk\u00e9p " + PROF_SNAPSHOT_DATE :', '" \u00b7 snapshot " + PROF_SNAPSHOT_DATE :')
+sub('" \u00b7 pillanatk\u00e9p " + CV_SNAPSHOT_DATE :', '" \u00b7 snapshot " + CV_SNAPSHOT_DATE :')
+sub('" \u00b7 \u00e9l\u0151"), false]);', '" \u00b7 live"), false]);')
 
 if missing:
     print("NOT FOUND (%d):" % len(missing))
@@ -406,9 +484,14 @@ if not os.path.isdir(BUILD_DIR):
     os.makedirs(BUILD_DIR)
 io.open(os.path.join(BUILD_DIR, 'template_en.html'), 'w', encoding='utf-8').write(h)
 
-rows = json.load(io.open(DATA, encoding='utf-8'))
-lit = "[\n" + ",\n".join(json.dumps(r, ensure_ascii=False) for r in rows) + "\n]"
-marker = "var PROF_ROWS = /*__PROF_DATA__*/[];"
-assert marker in h, "data marker missing"
-io.open(OUT, 'w', encoding='utf-8').write(h.replace(marker, "var PROF_ROWS = " + lit + ";"))
-print("built %s  (%d profession.hu jobs embedded)" % (os.path.relpath(OUT, ROOT), len(rows)))
+def splice(html, marker, var_name, path):
+    rows = json.load(io.open(path, encoding='utf-8'))
+    lit = "[\n" + ",\n".join(json.dumps(r, ensure_ascii=False) for r in rows) + "\n]"
+    assert marker in html, "data marker missing: " + marker
+    return html.replace(marker, var_name + " = " + lit + ";"), len(rows)
+
+h, n_prof = splice(h, "var PROF_ROWS = /*__PROF_DATA__*/[];", "var PROF_ROWS", DATA)
+h, n_cv   = splice(h, "var CV_ROWS = /*__CV_DATA__*/[];",     "var CV_ROWS",   DATA_CV)
+io.open(OUT, 'w', encoding='utf-8').write(h)
+print("built %s  (%d profession.hu + %d cvonline.hu jobs embedded)"
+      % (os.path.relpath(OUT, ROOT), n_prof, n_cv))

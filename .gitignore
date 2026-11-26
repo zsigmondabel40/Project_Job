@@ -6,6 +6,9 @@ tests/screenshot.png
 node_modules/
 package-lock.json
 
+# Daily refresh logs (written by scripts/refresh_daily.bat)
+logs/
+
 # Python
 __pycache__/
 *.pyc

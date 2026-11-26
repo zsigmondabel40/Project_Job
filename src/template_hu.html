@@ -324,6 +324,7 @@ a{color:var(--accent)}
     <div class="status">
       <span class="srcstat"><span class="dot loading" id="dotZ"></span><span id="statZ">zyntern.com…</span></span>
       <span class="srcstat"><span class="dot snap" id="dotP"></span><span id="statP">profession.hu</span></span>
+      <span class="srcstat"><span class="dot snap" id="dotC"></span><span id="statC">cvonline.hu</span></span>
       <button class="refresh" id="refresh" type="button">Frissítés</button>
     </div>
   </div>
@@ -388,6 +389,13 @@ var PROF_SNAPSHOT_SHORT = "09.16.";
    Oszlopok: id, cím, cég, város, helyszín, szakterület, alterület, típus,
    távmunka, bér, bér szövegesen, periódus, bruttó/nettó, feladva, link, munkarend */
 var PROF_ROWS = /*__PROF_DATA__*/[];
+
+var CV_SNAPSHOT_DATE = "2026. szeptember 23.";
+var CV_SNAPSHOT_SHORT = "09.23.";
+/* cvonline.hu: Budapest + "Szakmai gyakorlat, diákmunka" szűrő teljes találati
+   listája (329 hirdetés) a négy célterületre szűkítve. Ugyanaz a 16 oszlop,
+   mint a profession.hu soroknál — cvonline a kártyán nem közöl fizetést. */
+var CV_ROWS = /*__CV_DATA__*/[];
 
 var JOBS = [];
 var SAVED = loadSaved();
@@ -464,14 +472,15 @@ function normalize(j){
   };
 }
 
-/* a beépített profession.hu sorokat ugyanarra az alakra hozzuk,
-   mint amit a Zyntern API ad, hogy egy listában kezelhessük őket */
-function expandProf(r){
+/* a beépített pillanatkép-sorokat (profession.hu és cvonline.hu egyforma,
+   16 oszlopos alakban) ugyanarra az alakra hozzuk, mint amit a Zyntern API
+   ad, hogy egy listában lehessen kezelni mindhárom forrást */
+function expandSnapshot(r, src){
   var cls = r[15] || "";
   var hm = cls.match(/Heti\s+(\d+)(?:\s*-\s*(\d+))?\s*óra/i);
   return {
-    src: "profession.hu",
-    key: "p" + r[0],
+    src: src,
+    key: (src === "cvonline.hu" ? "c" : "p") + r[0],
     id: String(r[0]),
     title: r[1],
     company: r[2],
@@ -918,7 +927,10 @@ function renderDetail(rows){
   if (j.start)   facts.push(["Kezdés", j.start, true]);
   if (j.deadline) facts.push(["Jelentkezési határidő", j.deadline, true]);
   if (j.posted)  facts.push(["Meghirdetve", ago(j.posted), false]);
-  facts.push(["Forrás", j.src + (j.src === "profession.hu" ? " · pillanatkép " + PROF_SNAPSHOT_DATE : " · élő"), false]);
+  facts.push(["Forrás", j.src + (
+      j.src === "profession.hu" ? " · pillanatkép " + PROF_SNAPSHOT_DATE :
+      j.src === "cvonline.hu"   ? " · pillanatkép " + CV_SNAPSHOT_DATE :
+                                  " · élő"), false]);
 
   d.innerHTML =
     '<button class="close" type="button">← Vissza a listához</button>' +
@@ -976,8 +988,9 @@ function render(){
 
 /* ---------- betöltés ---------- */
 function setStatus(which, kind, text){
-  var dot = document.getElementById(which === "z" ? "dotZ" : "dotP");
-  var lab = document.getElementById(which === "z" ? "statZ" : "statP");
+  var suffix = which.toUpperCase();          // "z" → dotZ/statZ, "p" → dotP, "c" → dotC
+  var dot = document.getElementById("dot" + suffix);
+  var lab = document.getElementById("stat" + suffix);
   if (dot) dot.className = "dot " + kind;
   if (lab) lab.textContent = text;
 }
@@ -1006,16 +1019,18 @@ function showError(err){
     "<code>python -m http.server 8000</code> majd <code>http://localhost:8000/allaskereso.html</code>";
 }
 
-var PROF_JOBS = [];
+var SNAPSHOT_JOBS = [];
 
 async function load(){
   setStatus("z", "loading", "zyntern.com…");
   document.getElementById("notice").hidden = true;
 
-  /* a beépített profession.hu adat azonnal látszik, nem kell rá várni */
-  PROF_JOBS = PROF_ROWS.map(expandProf);
+  /* a két beépített forrás azonnal látszik, nem kell rájuk várni */
+  SNAPSHOT_JOBS = PROF_ROWS.map(function(r){ return expandSnapshot(r, "profession.hu"); })
+            .concat(CV_ROWS.map(function(r){ return expandSnapshot(r, "cvonline.hu"); }));
   setStatus("p", "snap", "profession.hu · pillanatkép " + PROF_SNAPSHOT_SHORT);
-  JOBS = PROF_JOBS.slice();
+  setStatus("c", "snap", "cvonline.hu · pillanatkép " + CV_SNAPSHOT_SHORT);
+  JOBS = SNAPSHOT_JOBS.slice();
   if (JOBS.length) render(); else showSkeleton();
 
   try {
@@ -1023,11 +1038,11 @@ async function load(){
     var t = new Date();
     setStatus("z", "live", "zyntern.com · élő " +
       String(t.getHours()).padStart(2, "0") + ":" + String(t.getMinutes()).padStart(2, "0"));
-    JOBS = zy.concat(PROF_JOBS);
+    JOBS = zy.concat(SNAPSHOT_JOBS);
     render();
   } catch(e){
     setStatus("z", "snap", "zyntern.com · nem elérhető");
-    JOBS = PROF_JOBS.slice();
+    JOBS = SNAPSHOT_JOBS.slice();
     showError(e);
     render();
   }

@@ -324,6 +324,7 @@ a{color:var(--accent)}
     <div class="status">
       <span class="srcstat"><span class="dot loading" id="dotZ"></span><span id="statZ">zyntern.com…</span></span>
       <span class="srcstat"><span class="dot snap" id="dotP"></span><span id="statP">profession.hu</span></span>
+      <span class="srcstat"><span class="dot snap" id="dotC"></span><span id="statC">cvonline.hu</span></span>
       <button class="refresh" id="refresh" type="button">Refresh</button>
     </div>
   </div>
@@ -509,6 +510,54 @@ var PROF_ROWS = [
 ["3002997", "Beszélgess, ajánlj és keress pénzt promóter diákmunkával az Alleeban - Diákmunka", "MADS - Márton Áron Iskolaszövetkezet", "Budapest", "Budapest XI.kerület", "Marketing, Média, PR", "Host, Hostess", "Diákmunka", 0, 2236, "2 236 Ft", "/ óra", "bruttó", "", "https://www.profession.hu/allas/beszelgess-ajanlj-es-keress-penzt-promoter-diakmunkaval-az-alleeban-diakmunka-mads-marton-aron-iskolaszovetkezet-budapest-3002997", "Teljes munkaidő • Kötött munkarend • Diákmunka"]
 ];
 
+var CV_SNAPSHOT_DATE = "23 September 2026";
+var CV_SNAPSHOT_SHORT = "23 Sep";
+/* cvonline.hu: the complete result set of their Budapest + "Szakmai gyakorlat,
+   diákmunka" (internship / student job) filter — 329 adverts — narrowed to the
+   four target fields. Same 16 columns as the profession.hu rows; cvonline does
+   not publish pay on its cards, so those columns are empty. */
+var CV_ROWS = [
+["1967057", "Bútorbolti értékesítő", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Értékesítés / Kereskedelem", "", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-22 09:00:00", "https://www.cvonline.hu/hu/allas/butorbolti-ertekesito-1967057", ""],
+["1971967", "Készülékportfólió gyakornok", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Marketing / Reklám / Média / PR", "", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-22 09:00:00", "https://www.cvonline.hu/hu/allas/keszulekportfolio-gyakornok-1971967", ""],
+["1976606", "Ci2C Collection Trainee (with German language knowledge)", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Pénzügy / Számvitel / Kontrolling", "Üzleti támogató központok, SSC", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-22 09:00:00", "https://www.cvonline.hu/hu/allas/ci2c-collection-trainee-german-language-knowledge-1976606", ""],
+["1976607", "Ci2C Credit Management Trainee", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Pénzügy / Számvitel / Kontrolling", "Üzleti támogató központok, SSC", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-22 09:00:00", "https://www.cvonline.hu/hu/allas/ci2c-credit-management-trainee-1976607", ""],
+["1976614", "Behajtási gyakornok", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Pénzügy / Számvitel / Kontrolling", "Üzleti támogató központok, SSC", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-22 09:00:00", "https://www.cvonline.hu/hu/allas/behajtasi-gyakornok-1976614", ""],
+["1981079", "Asset Accounting Analyst Intern", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Pénzügy / Számvitel / Kontrolling", "Üzleti támogató központok, SSC", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-22 09:00:00", "https://www.cvonline.hu/hu/allas/asset-accounting-analyst-intern-1981079", ""],
+["1981084", "Junior Consultant", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Pénzügy / Számvitel / Kontrolling", "Üzleti támogató központok, SSC", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-22 09:00:00", "https://www.cvonline.hu/hu/allas/junior-consultant-1981084", ""],
+["1981085", "Product Strategist Intern", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Pénzügy / Számvitel / Kontrolling", "Üzleti támogató központok, SSC", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-22 09:00:00", "https://www.cvonline.hu/hu/allas/product-strategist-intern-1981085", ""],
+["1986241", "Hétvégi promóter diákmunka az Árkádban", "MADS Iskolaszövetkezet", "Budapest", "Budapest", "Értékesítés / Kereskedelem", "Értékesítési asszisztens", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-22 09:00:00", "https://www.cvonline.hu/hu/allas/hetvegi-promoter-diakmunka-az-arkadban-1986241", ""],
+["1986366", "Portfolio Compliance Intern", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Pénzügy / Számvitel / Kontrolling", "Üzleti támogató központok, SSC", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-22 09:00:00", "https://www.cvonline.hu/hu/allas/portfolio-compliance-intern-1986366", ""],
+["1986372", "Marketing gyakornok", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Marketing / Reklám / Média / PR", "", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-22 09:00:00", "https://www.cvonline.hu/hu/allas/marketing-gyakornok-1986372", ""],
+["1986373", "Műszaki promóter", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Értékesítés / Kereskedelem", "Energetika / Villamosság", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-22 09:00:00", "https://www.cvonline.hu/hu/allas/muszaki-promoter-1986373", ""],
+["1966204", "Client Services Intern", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Pénzügy / Számvitel / Kontrolling", "Üzleti támogató központok, SSC", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-21 09:00:00", "https://www.cvonline.hu/hu/allas/client-services-intern-1966204", ""],
+["1966205", "Client Services SID - DDQ/RFP Intern", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Pénzügy / Számvitel / Kontrolling", "Üzleti támogató központok, SSC", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-21 09:00:00", "https://www.cvonline.hu/hu/allas/client-services-sid-ddq-rfp-intern-1966205", ""],
+["1975895", "HR gyakornok", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Marketing / Reklám / Média / PR", "", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-21 09:00:00", "https://www.cvonline.hu/hu/allas/hr-gyakornok-1975895", ""],
+["1975906", "Könyvelő gyakornok nyelvtudással", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Pénzügy / Számvitel / Kontrolling", "Üzleti támogató központok, SSC", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-21 09:00:00", "https://www.cvonline.hu/hu/allas/konyvelo-gyakornok-nyelvtudassal-1975906", ""],
+["1975907", "Ci2C Receivables & Revenue Trainee", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Pénzügy / Számvitel / Kontrolling", "Üzleti támogató központok, SSC", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-21 09:00:00", "https://www.cvonline.hu/hu/allas/ci2c-receivables-revenue-trainee-1975907", ""],
+["1980162", "Árumozgatás", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Értékesítés / Kereskedelem", "", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-21 09:00:00", "https://www.cvonline.hu/hu/allas/arumozgatas-1980162", ""],
+["1980179", "Animátor", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Értékesítés / Kereskedelem", "", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-21 09:00:00", "https://www.cvonline.hu/hu/allas/animator-1980179", ""],
+["1980186", "Pénztáros", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Értékesítés / Kereskedelem", "", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-21 09:00:00", "https://www.cvonline.hu/hu/allas/penztaros-1980186", ""],
+["1980188", "Termék-összekészítés", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Értékesítés / Kereskedelem", "", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-21 09:00:00", "https://www.cvonline.hu/hu/allas/termek-osszekeszites-1980188", ""],
+["1985369", "Piackutató gyakornok", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Marketing / Reklám / Média / PR", "", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-21 09:00:00", "https://www.cvonline.hu/hu/allas/piackutato-gyakornok-1985369", ""],
+["1979503", "Címkéző", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Értékesítés / Kereskedelem", "", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-20 09:00:00", "https://www.cvonline.hu/hu/allas/cimkezo-1979503", ""],
+["1984751", "Account Receivable gyakornok - Celanese", "MADS Iskolaszövetkezet", "Budapest", "Budapest", "Pénzügy / Számvitel / Kontrolling", "Pénzügyi asszisztens", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-20 09:00:00", "https://www.cvonline.hu/hu/allas/account-receivable-gyakornok-celanese-1984751", ""],
+["1974703", "Diákmunka - Service Desk munkatárs", "MŰISZ Iskolaszövetkezet", "Budapest", "Budapest", "Marketing / Reklám / Média / PR", "", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-19 09:00:00", "https://www.cvonline.hu/hu/allas/diakmunka-service-desk-munkatars-1974703", ""],
+["1984186", "Termék-összekészítés", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Értékesítés / Kereskedelem", "", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-19 09:00:00", "https://www.cvonline.hu/hu/allas/termek-osszekeszites-1984186", ""],
+["1969343", "Loyalty Partner Sourcer gyakornok", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Marketing / Reklám / Média / PR", "", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-18 09:00:00", "https://www.cvonline.hu/hu/allas/loyalty-partner-sourcer-gyakornok-1969343", ""],
+["1969350", "PPC és Webcontent gyakornok", "MADS Iskolaszövetkezet", "Budapest", "Budapest", "Marketing / Reklám / Média / PR", "Marketing asszisztens", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-18 09:00:00", "https://www.cvonline.hu/hu/allas/ppc-es-webcontent-gyakornok-1969350", ""],
+["1969609", "Információs pultos", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Értékesítés / Kereskedelem", "", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-18 09:00:00", "https://www.cvonline.hu/hu/allas/informacios-pultos-1969609", ""],
+["1974253", "Kintlévőség kezelési gyakornok", "MADS Iskolaszövetkezet", "Budapest", "Budapest", "Pénzügy / Számvitel / Kontrolling", "", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-18 09:00:00", "https://www.cvonline.hu/hu/allas/kintlevosegkezelesi-gyakornok-1974253", ""],
+["1978365", "Pénzügyi gyakornok", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Pénzügy / Számvitel / Kontrolling", "Üzleti támogató központok, SSC", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-18 09:00:00", "https://www.cvonline.hu/hu/allas/penzugyi-gyakornok-1978365", ""],
+["1978638", "Könyvelő gyakornok", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Pénzügy / Számvitel / Kontrolling", "Üzleti támogató központok, SSC", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-18 09:00:00", "https://www.cvonline.hu/hu/allas/konyvelo-gyakornok-1978638", ""],
+["1978640", "Változásmenedzsment igazgatósági gyakornok", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Szervezés / Menedzsment / Cégvezetés", "", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-18 09:00:00", "https://www.cvonline.hu/hu/allas/valtozasmenedzsment-igazgatosagi-gyakornok-1978640", ""],
+["1973596", "Marketing gyakornok", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Marketing / Reklám / Média / PR", "", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-17 09:00:00", "https://www.cvonline.hu/hu/allas/marketing-gyakornok-1973596", ""],
+["1978108", "German speaking Accounts Payable Accountant Trainee", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Pénzügy / Számvitel / Kontrolling", "Üzleti támogató központok, SSC", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-17 09:00:00", "https://www.cvonline.hu/hu/allas/german-speaking-accounts-payable-accountant-trainee-1978108", ""],
+["1978120", "Pénzügyi gyakornok", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Pénzügy / Számvitel / Kontrolling", "Üzleti támogató központok, SSC", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-17 09:00:00", "https://www.cvonline.hu/hu/allas/penzugyi-gyakornok-1978120", ""],
+["1982665", "Compliance gyakornok", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Pénzügy / Számvitel / Kontrolling", "Üzleti támogató központok, SSC", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-17 09:00:00", "https://www.cvonline.hu/hu/allas/compliance-gyakornok-1982665", ""],
+["1983146", "Pénzügyi gyakornok", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Pénzügy / Számvitel / Kontrolling", "Üzleti támogató központok, SSC", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-17 09:00:00", "https://www.cvonline.hu/hu/allas/penzugyi-gyakornok-1983146", ""],
+["1977403", "Márkabolti eladó", "Mind-Diák Szövetkezet", "Budapest", "Budapest", "Értékesítés / Kereskedelem", "", "Szakmai gyakorlat, diákmunka", 0, 0, "", "", "", "2026-09-16 09:00:00", "https://www.cvonline.hu/hu/allas/markabolti-elado-1977403", ""]
+];
+
 var JOBS = [];
 var SAVED = loadSaved();
 
@@ -585,14 +634,15 @@ function normalize(j){
   };
 }
 
-/* Reshape the built-in profession.hu rows into exactly the shape the Zyntern
-   API returns, so both sources can be handled as one list. */
-function expandProf(r){
+/* Reshape the built-in snapshot rows (profession.hu and cvonline.hu share the
+   same 16-column shape) into exactly the shape the Zyntern API returns, so all
+   three sources can be handled as one list. */
+function expandSnapshot(r, src){
   var cls = r[15] || "";
   var hm = cls.match(/Heti\s+(\d+)(?:\s*-\s*(\d+))?\s*óra/i);
   return {
-    src: "profession.hu",
-    key: "p" + r[0],
+    src: src,
+    key: (src === "cvonline.hu" ? "c" : "p") + r[0],
     id: String(r[0]),
     title: r[1],
     company: r[2],
@@ -658,6 +708,15 @@ var FIELD_EN = {
   "Értékesítés, Kereskedelem": "Sales & Retail",
   "Marketing, Média, PR": "Marketing, Media & PR",
   "Cégvezetés, Menedzsment": "Management & Leadership",
+  "Pénzügy / Számvitel / Kontrolling": "Finance & Accounting",
+  "Értékesítés / Kereskedelem": "Sales & Retail",
+  "Marketing / Reklám / Média / PR": "Marketing, Media & PR",
+  "Szervezés / Menedzsment / Cégvezetés": "Management & Leadership",
+  "Üzleti támogató központok, SSC": "Shared Service Centre",
+  "Értékesítési asszisztens": "Sales Assistant",
+  "Pénzügyi asszisztens": "Finance Assistant",
+  "Marketing asszisztens": "Marketing Assistant",
+  "Energetika / Villamosság": "Energy & Electrical",
   "Adótanácsadó, Szakértő": "Tax Advisor",
   "Elemző, Tanácsadó": "Analyst / Advisor",
   "Fotózás": "Photography",
@@ -690,7 +749,8 @@ var TYPE_EN = {
   "Diákmunka": "Student job",
   "Friss diplomás állás": "Graduate role",
   "Junior, 1-3 év tapasztalat": "Junior (1–3 yrs)",
-  "Nincs tapasztalat": "No experience required"
+  "Nincs tapasztalat": "No experience required",
+  "Szakmai gyakorlat, diákmunka": "Internship / student job"
 };
 var LANG_EN = {
   "Magyar": "Hungarian",
@@ -1207,7 +1267,10 @@ function renderDetail(rows){
   if (j.start)   facts.push(["Start", j.start, true]);
   if (j.deadline) facts.push(["Application deadline", j.deadline, true]);
   if (j.posted)  facts.push(["Posted", ago(j.posted), false]);
-  facts.push(["Source", j.src + (j.src === "profession.hu" ? " · snapshot " + PROF_SNAPSHOT_DATE : " · live"), false]);
+  facts.push(["Source", j.src + (
+      j.src === "profession.hu" ? " · snapshot " + PROF_SNAPSHOT_DATE :
+      j.src === "cvonline.hu"   ? " · snapshot " + CV_SNAPSHOT_DATE :
+                                  " · live"), false]);
 
   d.innerHTML =
     '<button class="close" type="button">← Back to list</button>' +
@@ -1265,8 +1328,9 @@ function render(){
 
 /* ---------- loading ---------- */
 function setStatus(which, kind, text){
-  var dot = document.getElementById(which === "z" ? "dotZ" : "dotP");
-  var lab = document.getElementById(which === "z" ? "statZ" : "statP");
+  var suffix = which.toUpperCase();          // "z" → dotZ/statZ, "p" → dotP, "c" → dotC
+  var dot = document.getElementById("dot" + suffix);
+  var lab = document.getElementById("stat" + suffix);
   if (dot) dot.className = "dot " + kind;
   if (lab) lab.textContent = text;
 }
@@ -1295,16 +1359,18 @@ function showError(err){
     "<code>python -m http.server 8000</code> majd <code>http://localhost:8000/internship_finder.html</code>";
 }
 
-var PROF_JOBS = [];
+var SNAPSHOT_JOBS = [];
 
 async function load(){
   setStatus("z", "loading", "zyntern.com…");
   document.getElementById("notice").hidden = true;
 
-  /* the built-in profession.hu data shows immediately — no waiting on the network */
-  PROF_JOBS = PROF_ROWS.map(expandProf);
+  /* both built-in sources show immediately — no waiting on the network */
+  SNAPSHOT_JOBS = PROF_ROWS.map(function(r){ return expandSnapshot(r, "profession.hu"); })
+            .concat(CV_ROWS.map(function(r){ return expandSnapshot(r, "cvonline.hu"); }));
   setStatus("p", "snap", "profession.hu · snapshot " + PROF_SNAPSHOT_SHORT);
-  JOBS = PROF_JOBS.slice();
+  setStatus("c", "snap", "cvonline.hu · snapshot " + CV_SNAPSHOT_SHORT);
+  JOBS = SNAPSHOT_JOBS.slice();
   if (JOBS.length) render(); else showSkeleton();
 
   try {
@@ -1312,11 +1378,11 @@ async function load(){
     var t = new Date();
     setStatus("z", "live", "zyntern.com · live " +
       String(t.getHours()).padStart(2, "0") + ":" + String(t.getMinutes()).padStart(2, "0"));
-    JOBS = zy.concat(PROF_JOBS);
+    JOBS = zy.concat(SNAPSHOT_JOBS);
     render();
   } catch(e){
     setStatus("z", "snap", "zyntern.com · unavailable");
-    JOBS = PROF_JOBS.slice();
+    JOBS = SNAPSHOT_JOBS.slice();
     showError(e);
     render();
   }
