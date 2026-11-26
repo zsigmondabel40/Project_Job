@@ -79,7 +79,8 @@ internship_finder.html      the finished app — open this
 │   ├── prof_rows.json      profession.hu snapshot, 120 jobs (16 columns per row)
 │   ├── cvonline_rows.json  cvonline.hu snapshot, 39 jobs (same 16 columns)
 │   ├── snapshot_meta.json  when each snapshot was last collected
-│   └── cv.json             CV, structured — input for the match engine
+│   ├── cv.example.json     CV template — copy to cv.json and fill in
+│   └── cv.json             your own CV (git-ignored, never published)
 ├── scripts/
 │   ├── refresh_all.py          both scrapers + rebuild, in one command
 │   ├── scrape_profession.py    refreshes data/prof_rows.json
@@ -226,8 +227,13 @@ not really support), and ranks them. It prints which keywords matched each job, 
 score is explainable rather than a black box.
 
 ```bash
+cp data/cv.example.json data/cv.json   # then fill in your own details
 python scripts/match_engine.py data/cv.json <jobs.json> matched.json
 ```
+
+`data/cv.json` is listed in `.gitignore`, so a real CV stays on your own machine.
+The repository only contains `data/cv.example.json`, which has the same structure
+with placeholder values.
 
 Its keyword list is Hungarian, so feeding it the English-category data would need the
 weights extended — noted as future work below.

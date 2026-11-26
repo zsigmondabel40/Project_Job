@@ -1,0 +1,64 @@
+{
+  "name": "Your Name",
+  "education": [
+    {
+      "institution": "<institution>",
+      "degree": "<degree>",
+      "period": "<period>",
+      "gpa": 0.0,
+      "relevant_coursework": [
+        "<relevant_coursework>"
+      ],
+      "semester_abroad": {
+        "institution": "<institution>",
+        "relevant_courses": [
+          "<relevant_courses>"
+        ]
+      }
+    }
+  ],
+  "professional_experience": [
+    {
+      "company": "<company>",
+      "role": "<role>",
+      "location": "<location>",
+      "period": "<period>",
+      "responsibilities": [
+        "<responsibilities>"
+      ]
+    }
+  ],
+  "other_experience": [
+    {
+      "type": "<type>",
+      "name": "<name>"
+    }
+  ],
+  "leadership_extracurriculars": [
+    {
+      "organization": "<organization>",
+      "role": "<role>",
+      "period": "<period>",
+      "details": [
+        "<details>"
+      ]
+    }
+  ],
+  "skills": {
+    "analytics": [
+      "<analytics>"
+    ],
+    "languages": [
+      {
+        "language": "<language>",
+        "level": "<level>"
+      }
+    ]
+  },
+  "interests": [
+    "<interests>"
+  ],
+  "target_fields": [
+    "<target_fields>"
+  ]
+}

@@ -23,8 +23,7 @@ desktop.ini
 .idea/
 
 # ---------------------------------------------------------------------
-# PRIVACY: data/cv.json holds your real CV (name, education, employer).
-# If you ever make this repository PUBLIC, uncomment the next line first
-# and remove the file from git history.
-# data/cv.json
+# PRIVACY: data/cv.json holds a real CV (name, education, employer), so it
+# is never committed. data/cv.example.json shows the expected structure.
+data/cv.json
 # ---------------------------------------------------------------------
